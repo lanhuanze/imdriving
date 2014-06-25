@@ -36,6 +36,10 @@ public class Root {
         return new ExecShell().executeCommand(ExecShell.SHELL_CMD.check_su_binary)!=null;
     }
     
+    public boolean checkRootMethod4() {
+    	
+    }
+    
     private static class ExecShell {
 
 
