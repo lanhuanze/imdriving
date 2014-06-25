@@ -4,6 +4,9 @@
     <string name="app_name">Im Driving</string>
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
-    <string name="notification_listener_name">NotificationListenerService</string>
-
+    <string name="notification_listener_name">ImDrivingNotificationService</string>
+    <string name="enable_notification_service_title">Please enable notification service</string>
+    <string name="enable_notification_service_content">Im Driving depends on notification service, please enable it.</string>
+	<string name="test_notification_title">Welcome to I am driving</string>
+	<string name="test_notification_content">Wish you a good journey</string>
 </resources>
