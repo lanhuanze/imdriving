@@ -1,6 +1,11 @@
 package com.irefire.android.imdriving.event;
 
+import java.util.Collections;
+import java.util.List;
+
 import android.content.Context;
+
+import com.irefire.android.imdriving.service.ResultText;
 
 /**
  * This class is abstract class of the event.
@@ -40,6 +45,8 @@ public abstract class Event {
 	 * 
 	 */
 	protected EventStatus status;
+	
+	protected List<ResultText> mRecognitionResult;
 	
 	public Event(Context c) {
 		mContext = c;
@@ -85,6 +92,16 @@ public abstract class Event {
 		this.status = status;
 	}
 	
+	
+	
+	public List<ResultText> getRecognitionResult() {
+		return Collections.unmodifiableList(mRecognitionResult);
+	}
+
+	public void setRecognitionResult(List<ResultText> mRecognitionResult) {
+		this.mRecognitionResult = mRecognitionResult;
+	}
+
 	/**
 	 * If app set auto read the notification, we have to
 	 * farther check this one.

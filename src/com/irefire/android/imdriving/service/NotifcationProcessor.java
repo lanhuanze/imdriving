@@ -65,7 +65,7 @@ public final class NotifcationProcessor {
 						e.wait(Constants.SPEAK_TIME_OUT);
 					}
 
-					if (settings.isAutoReadWithoutAsk() && e.autoActionable()) {
+					if (settings.isAutoRead() && e.autoActionable()) {
 						e.positiveAction();
 					} else {
 						speak(e.getQuestionToAsk(), e);

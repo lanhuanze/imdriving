@@ -1,14 +1,23 @@
 package com.irefire.android.imdriving.utils;
 
+import java.util.ArrayList;
+import java.util.BitSet;
+import java.util.EnumSet;
+import java.util.List;
+
+import android.text.TextUtils;
+
 public class AppSettings {
 	
 	/**
 	 * Read the notification without 
 	 */
-	private boolean autoReadWithoutAsk = true;
+	private boolean autoRead = true;
 	
 	private String ttsLanguage = "en_US";
 	private String ttsVoice = "Samantha";
+	
+	private BitSet changeSet = new BitSet();
 	
 	
 	
@@ -24,12 +33,15 @@ public class AppSettings {
 		public static final AppSettings _INST = new AppSettings();
 	}
 
-	public boolean isAutoReadWithoutAsk() {
-		return autoReadWithoutAsk;
+	public boolean isAutoRead() {
+		return autoRead;
 	}
 
-	public void setAutoReadWithoutAsk(boolean autoReadWithoutAsk) {
-		this.autoReadWithoutAsk = autoReadWithoutAsk;
+	public void setAutoReadWithoutAsk(boolean autoRead) {
+		if(this.autoRead != autoRead) {
+			changeSet.set(SettingItem.AUTOREAD.ordinal());
+		}
+		this.autoRead = autoRead;
 	}
 
 	public String getTtsLanguage() {
@@ -37,6 +49,9 @@ public class AppSettings {
 	}
 
 	public void setTtsLanguage(String ttsLanguage) {
+		if(!TextUtils.equals(this.ttsLanguage, ttsLanguage)) {
+			changeSet.set(SettingItem.LANGUAGE.ordinal());
+		}
 		this.ttsLanguage = ttsLanguage;
 	}
 
@@ -45,8 +60,48 @@ public class AppSettings {
 	}
 
 	public void setTtsVoice(String ttsVoice) {
+		if(!TextUtils.equals(this.ttsVoice, ttsVoice)) {
+			changeSet.set(SettingItem.VOICE.ordinal());
+		}
 		this.ttsVoice = ttsVoice;
 	}
 	
+	public static interface SettingChangeListener {
+		public void onChange(AppSettings settings, BitSet set);
+	}
 	
+	private List<SettingChangeListener> mListeners = new ArrayList<SettingChangeListener>();
+	
+	public void addListener(SettingChangeListener listener) {
+		if(listener == null) {
+			return;
+		}
+		synchronized(mListeners) {
+			mListeners.add(listener);
+		}
+	}
+	
+	public boolean removeListener(SettingChangeListener listener) {
+		if(listener == null) {
+			return false;
+		}
+		synchronized(mListeners) {
+			return mListeners.remove(listener);
+		}
+	}
+	
+	public void notifyChange() {
+		 if(!changeSet.isEmpty()) {
+			 synchronized(mListeners) {
+				 for(SettingChangeListener l: mListeners) {
+					 l.onChange(this, changeSet);
+				 }
+			 }
+		 }
+		 changeSet.clear();
+	}
+	
+	public static enum SettingItem {
+		LANGUAGE, VOICE, AUTOREAD;
+	}
 }
