@@ -23,6 +23,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.irefire.android.imdriving.service.NotifcationProcessor;
 import com.irefire.android.imdriving.utils.Constants;
 import com.irefire.android.imdriving.utils.Root;
 
@@ -83,6 +84,9 @@ public class MainActivity extends Activity {
 		boolean rooted = Root.isRooted();
 		l.debug("rooted:" + rooted);
 		mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+		
+		// test we will start our service automatically.
+		NotifcationProcessor.getInstance().start();
 	}
 
 	@Override

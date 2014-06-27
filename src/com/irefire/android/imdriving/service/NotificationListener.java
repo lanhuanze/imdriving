@@ -23,6 +23,7 @@ public class NotificationListener extends NotificationListenerService {
 			return;
 		}
 		l.debug("new notification received:" + sbn.toString());
+		NotifcationProcessor.getInstance().enqueueEvent(sbn);
 	}
 
 	@Override

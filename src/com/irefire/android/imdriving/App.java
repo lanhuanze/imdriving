@@ -1,6 +1,7 @@
 package com.irefire.android.imdriving;
 
 import android.app.Application;
+import android.content.Context;
 import android.content.res.Configuration;
 
 import com.irefire.android.imdriving.utils.NaunceInfo;
@@ -10,7 +11,7 @@ public class App extends Application {
 
 	@Override
 	public void onCreate() {
-		// TODO Auto-generated method stub
+		sContext = this;
 		super.onCreate();
 		sSpeechKit = SpeechKit.initialize(this, NaunceInfo.SpeechKitAppId,
 				NaunceInfo.SpeechKitServer, NaunceInfo.SpeechKitPort,
@@ -21,6 +22,8 @@ public class App extends Application {
 	public void onTerminate() {
 		// TODO Auto-generated method stub
 		super.onTerminate();
+		sContext = null;
+		sSpeechKit.release();
 	}
 
 	@Override
@@ -34,5 +37,12 @@ public class App extends Application {
 	public static SpeechKit getSpeechKit() {
 		assert sSpeechKit != null;
 		return sSpeechKit;
+	}
+	
+	private static Context sContext;
+	
+	public static Context getStaticContext() {
+		assert sContext != null;
+		return sContext;
 	}
 }

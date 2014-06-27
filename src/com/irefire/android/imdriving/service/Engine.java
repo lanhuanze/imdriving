@@ -8,6 +8,8 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import android.text.TextUtils;
+
 import com.irefire.android.imdriving.App;
 import com.irefire.android.imdriving.event.Event;
 import com.irefire.android.imdriving.event.Event.EventStatus;
@@ -30,17 +32,14 @@ public class Engine implements AppSettings.SettingChangeListener{
 	}
 
 	private Engine() {
+		mSettings = AppSettings.getInstance();
+		
+		//we will get notification when settings changed.
+		mSettings.addListener(this);
+		
 		mSpeechKit = App.getSpeechKit();
-		mVocalizer = mSpeechKit.createVocalizerWithLanguage(
-				mSettings.getTtsLanguage(), mSpeakListener, null);
-		mVocalizer.setVoice(mSettings.getTtsVoice());
-
-		mRecognizer = mSpeechKit.createRecognizer(
-				Recognizer.RecognizerType.Dictation,
-				Recognizer.EndOfSpeechDetection.Long,
-				mSettings.getTtsLanguage(), mDictationListener, null);
-		l.debug("Engine inited with language:" + mSettings.getTtsLanguage()
-				+ ", voice:" + mSettings.getTtsVoice());
+		
+		createVocalizerAndRecognizer();
 		
 		mCheckBitSet = new BitSet();
 		mCheckBitSet.set(AppSettings.SettingItem.LANGUAGE.ordinal());
@@ -63,7 +62,17 @@ public class Engine implements AppSettings.SettingChangeListener{
 	 */
 	public boolean speak(String text, Event target) {
 		l.debug("speak text:" + text);
-		mVocalizer.speakString(text, target);
+		if(TextUtils.isEmpty(text)) {
+			l.warn("We won't speak empty text");
+			return false;
+		}
+		// We asign the old mVocalizer to a local variable in case when
+		// update it when settings change.
+		Vocalizer vocalizer = null;
+		synchronized(mSpeechKit) {
+			vocalizer = mVocalizer;
+		}
+		vocalizer.speakString(text, target);
 		l.debug("speak text:" + text + ", begin to wait speak.");
 		// we will wait until speak finish.
 		try {
@@ -86,8 +95,15 @@ public class Engine implements AppSettings.SettingChangeListener{
 	public List<ResultText> dictateText(Event target) {
 		l.debug("dictateText start dictate text");
 		mDictationListener.setTargetObject(target);
-		mRecognizer.setListener(mDictationListener);
-		mRecognizer.start();
+		
+		// We asign the old mRecognizer to a local variable in case when
+		// update it when settings change.
+		Recognizer recognizer = null;
+		synchronized(mSpeechKit) {
+			recognizer = mRecognizer;
+		}
+		recognizer.setListener(mDictationListener);
+		recognizer.start();
 		l.debug("dictateText  waiting");
 		try {
 			if (target != null) {
@@ -114,10 +130,36 @@ public class Engine implements AppSettings.SettingChangeListener{
 
 	private List<ResultText> setResult(Object target, Recognition result) {
 		List<ResultText> results = new ArrayList<ResultText>();
+		
+		if(result != null) {
+			int count = result.getResultCount();
+			l.debug("Recognition has " + count +" result, suggestion:" + result.getSuggestion());
+			Recognition.Result r = null;
+			for(int i = 0; i < count; i++) {
+				r = result.getResult(i);
+				l.debug("Recognition result[ "+ i +"], score:" + r.getScore() +", text:" + r.getText());
+				results.add(new ResultText(r.getScore(), r.getText()));
+			}
+		}
+		
 		if (target instanceof Event) {
+			((Event) target).setSuggestion(result.getSuggestion());
 			((Event) target).setRecognitionResult(results);
 		}
 		return results;
+	}
+	
+	private void createVocalizerAndRecognizer() {
+		mVocalizer = mSpeechKit.createVocalizerWithLanguage(
+				mSettings.getTtsLanguage(), mSpeakListener, null);
+		mVocalizer.setVoice(mSettings.getTtsVoice());
+
+		mRecognizer = mSpeechKit.createRecognizer(
+				Recognizer.RecognizerType.Dictation,
+				Recognizer.EndOfSpeechDetection.Long,
+				mSettings.getTtsLanguage(), mDictationListener, null);
+		l.debug("Engine inited with language:" + mSettings.getTtsLanguage()
+				+ ", voice:" + mSettings.getTtsVoice());
 	}
 
 	private DictationListener mDictationListener = new DictationListener();
@@ -192,6 +234,10 @@ public class Engine implements AppSettings.SettingChangeListener{
 	public void onChange(AppSettings settings, BitSet set) {
 		if(set.intersects(mCheckBitSet)) {
 			//TODO, we will update our mVocalizer and mRecognizer here.
+			synchronized(mSpeechKit) {
+				createVocalizerAndRecognizer();
+			}
+			l.debug("Recreate createVocalizerAndRecognizer by settings changed.");
 		}
 	}
 

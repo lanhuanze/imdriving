@@ -2,7 +2,6 @@ package com.irefire.android.imdriving.utils;
 
 import java.util.ArrayList;
 import java.util.BitSet;
-import java.util.EnumSet;
 import java.util.List;
 
 import android.text.TextUtils;
@@ -14,7 +13,7 @@ public class AppSettings {
 	 */
 	private boolean autoRead = true;
 	
-	private String ttsLanguage = "en_US";
+	private String ttsLanguage = "cmn-CHN"; //ÖÐÎÄ
 	private String ttsVoice = "Samantha";
 	
 	private BitSet changeSet = new BitSet();
