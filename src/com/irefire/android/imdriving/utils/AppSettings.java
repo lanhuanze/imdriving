@@ -11,9 +11,9 @@ public class AppSettings {
 	/**
 	 * Read the notification without 
 	 */
-	private boolean autoRead = true;
+	private boolean autoRead = false;
 	
-	private String ttsLanguage = "cmn-CHN"; //ÖÐÎÄ
+	private String ttsLanguage = "cmn-CHN"; //ä¸­æ–‡
 	private String ttsVoice = "Samantha";
 	
 	private BitSet changeSet = new BitSet();

@@ -6,16 +6,16 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import android.app.Notification;
 import android.content.Context;
-import android.os.Bundle;
 import android.service.notification.StatusBarNotification;
 
 import com.irefire.android.imdriving.App;
 import com.irefire.android.imdriving.R;
-import com.irefire.android.imdriving.service.AppNameManager;
+import com.irefire.android.imdriving.service.ResourceManager;
+import com.irefire.android.imdriving.service.Engine;
 import com.irefire.android.imdriving.service.ResultText;
 import com.irefire.android.imdriving.utils.AppSettings;
+import com.irefire.android.imdriving.utils.Constants;
 import com.irefire.android.imdriving.utils.NotificationUtils;
 
 /**
@@ -28,10 +28,22 @@ public abstract class Event {
 	private static final Logger l = LoggerFactory.getLogger(Event.class);
 	
 	public static enum EventStatus {
-		DONE_OK, DONE_ERROR,INPROGRESSING;
+		INIT, SPEAKING, LISTENING, DONE_OK, DONE_ERROR;
+	}
+	
+	/**
+	 * What next step should event do.
+	 * @author lan
+	 *
+	 */
+	public static enum NextAction {
+		INIT, YES, NO, TRYAGAIN, REPLY, ABORT, DONE, DICTATION_YES_OR_NO, DICTATION_CONTENT;
 	}
 	
 	protected Context mContext = null;
+	
+	protected Engine mEngine = null;
+	protected ResourceManager mResourceManager = null;
 	
 	/**
 	 * The message first read to user. 
@@ -57,7 +69,7 @@ public abstract class Event {
 	/**
 	 * 
 	 */
-	protected EventStatus status;
+	protected EventStatus status = EventStatus.INIT;
 	
 	protected List<ResultText> mRecognitionResult;
 	
@@ -66,8 +78,12 @@ public abstract class Event {
 	 */
 	protected String suggestion;
 	
+	protected NextAction nextAction = NextAction.INIT;
+	
 	public Event(Context c) {
 		mContext = c;
+		mEngine = Engine.getInstance();
+		mResourceManager = ResourceManager.getInstance();q
 	}
 
 	public String getTips() {
@@ -129,6 +145,47 @@ public abstract class Event {
 	public void setSuggestion(String suggestion) {
 		this.suggestion = suggestion;
 	}
+	
+	public NextAction getNextAction() {
+		return nextAction;
+	}
+
+	public void setNextAction(NextAction nextAction) {
+		this.nextAction = nextAction;
+	}
+	
+	public void dictateYesOrNo() {
+		this.status = EventStatus.LISTENING;
+		List<ResultText> result = mEngine.dictateText(this, Constants.LISTEN_YES_NO_TIME_OUT);
+		
+		if(status != EventStatus.DONE_OK) {
+			nextAction = NextAction.TRYAGAIN;
+			return;
+		}
+		
+		String text;
+		for(ResultText t: result) {
+			text = t.getText().toUpperCase();
+			if(mResourceManager.wordPositive(text)) {
+				nextAction = NextAction.YES;
+				break;
+			}
+			if(mResourceManager.wordNegative(text)) {
+				nextAction = NextAction.NO;
+				break;
+			}
+			
+			if(mResourceManager.wordStop(text)) {
+				nextAction = NextAction.ABORT;
+				break;
+			}
+		}
+	}
+	
+	
+	public abstract void dectateContent();
+	
+	public abstract void tryAgain();
 
 	/**
 	 * If app set auto read the notification, we have to
@@ -147,8 +204,10 @@ public abstract class Event {
 	 */
 	public abstract void negativeAction();
 	
+	public abstract void reply();
+	
 	public static final Event createEvent(StatusBarNotification sbn) {
-		String name = AppNameManager.getInstance().getAppName(sbn.getPackageName());
+		String name = ResourceManager.getInstance().getAppName(sbn.getPackageName());
 		boolean autoRead = AppSettings.getInstance().isAutoRead();
 		Context c = App.getStaticContext();
 		Event event = new NotificationEvent(c);
@@ -162,8 +221,8 @@ public abstract class Event {
 		event.setQuestionToAsk(question);
 		String title = NotificationUtils.getTitle(sbn.getNotification());
 		String content = NotificationUtils.getContent(sbn.getNotification());
-		event.setTitle(title);
-		event.setContent(content);
+		event.setTitle(c.getString(R.string.new_notification_title,title));
+		event.setContent(c.getString(R.string.new_notification_content, content));
 		return event;
 	}
 }

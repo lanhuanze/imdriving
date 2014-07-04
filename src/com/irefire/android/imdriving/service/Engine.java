@@ -20,7 +20,7 @@ import com.nuance.nmdp.speechkit.SpeechError;
 import com.nuance.nmdp.speechkit.SpeechKit;
 import com.nuance.nmdp.speechkit.Vocalizer;
 
-public class Engine implements AppSettings.SettingChangeListener{
+public class Engine implements AppSettings.SettingChangeListener {
 	private static final Logger l = LoggerFactory.getLogger(Engine.class);
 
 	private static final class Holder {
@@ -33,14 +33,14 @@ public class Engine implements AppSettings.SettingChangeListener{
 
 	private Engine() {
 		mSettings = AppSettings.getInstance();
-		
-		//we will get notification when settings changed.
+
+		// we will get notification when settings changed.
 		mSettings.addListener(this);
-		
+
 		mSpeechKit = App.getSpeechKit();
-		
+
 		createVocalizerAndRecognizer();
-		
+
 		mCheckBitSet = new BitSet();
 		mCheckBitSet.set(AppSettings.SettingItem.LANGUAGE.ordinal());
 		mCheckBitSet.set(AppSettings.SettingItem.VOICE.ordinal());
@@ -61,26 +61,25 @@ public class Engine implements AppSettings.SettingChangeListener{
 	 * @return
 	 */
 	public boolean speak(String text, Event target) {
+		assert target != null;
 		l.debug("speak text:" + text);
-		if(TextUtils.isEmpty(text)) {
+		if (TextUtils.isEmpty(text)) {
 			l.warn("We won't speak empty text");
 			return false;
 		}
 		// We asign the old mVocalizer to a local variable in case when
 		// update it when settings change.
 		Vocalizer vocalizer = null;
-		synchronized(mSpeechKit) {
+		synchronized (mSpeechKit) {
 			vocalizer = mVocalizer;
 		}
 		vocalizer.speakString(text, target);
 		l.debug("speak text:" + text + ", begin to wait speak.");
 		// we will wait until speak finish.
 		try {
-			if (target != null) {
-				synchronized (target) {
-					target.wait();
-					l.debug("speak text:" + text + ", got notified..");
-				}
+			synchronized (target) {
+				target.wait();
+				l.debug("speak text:" + text + ", got notified..");
 			}
 		} catch (InterruptedException e) {
 			l.debug("speak text:" + text + " got exception:" + e);
@@ -92,33 +91,50 @@ public class Engine implements AppSettings.SettingChangeListener{
 	 * 
 	 */
 
-	public List<ResultText> dictateText(Event target) {
+	public List<ResultText> dictateText(Event target, long listeningTime) {
+		assert target != null;
 		l.debug("dictateText start dictate text");
 		mDictationListener.setTargetObject(target);
-		
+
 		// We asign the old mRecognizer to a local variable in case when
 		// update it when settings change.
 		Recognizer recognizer = null;
-		synchronized(mSpeechKit) {
+		synchronized (mSpeechKit) {
 			recognizer = mRecognizer;
 		}
 		recognizer.setListener(mDictationListener);
 		recognizer.start();
+		if (listeningTime > 0) {
+			try {
+				l.debug("Sleeping " + listeningTime + " ms to wait listening.");
+				Thread.sleep(listeningTime);
+				synchronized (target) {
+					if (target.getEventStatus() == EventStatus.LISTENING) {
+						// 如果还没有结束，则停止听。
+						recognizer.stopRecording();
+						l.debug("Stop listening.");
+
+					}
+				}
+			} catch (InterruptedException e) {
+				l.debug("sleeping got exception:" + e);
+			}
+		}
+
 		l.debug("dictateText  waiting");
 		try {
-			if (target != null) {
-				synchronized (target) {
+			synchronized (target) {
+				if (target.getEventStatus() == EventStatus.LISTENING) {
+					// 如果还没有结束，则停止听。
+					recognizer.stopRecording();
 					target.wait();
-					l.debug("dictateText got notified..");
 				}
+				l.debug("dictateText got notified..");
 			}
 		} catch (InterruptedException e) {
 			l.debug("dictateText got exception:" + e);
 		}
-		if(target != null) {
-			return target.getRecognitionResult();
-		}
-		return Collections.emptyList();
+		return target.getRecognitionResult();
 	}
 
 	private void setError(Object target, SpeechError error) {
@@ -130,25 +146,27 @@ public class Engine implements AppSettings.SettingChangeListener{
 
 	private List<ResultText> setResult(Object target, Recognition result) {
 		List<ResultText> results = new ArrayList<ResultText>();
-		
-		if(result != null) {
+
+		if (result != null) {
 			int count = result.getResultCount();
-			l.debug("Recognition has " + count +" result, suggestion:" + result.getSuggestion());
+			l.debug("Recognition has " + count + " result, suggestion:"
+					+ result.getSuggestion());
 			Recognition.Result r = null;
-			for(int i = 0; i < count; i++) {
+			for (int i = 0; i < count; i++) {
 				r = result.getResult(i);
-				l.debug("Recognition result[ "+ i +"], score:" + r.getScore() +", text:" + r.getText());
+				l.debug("Recognition result[ " + i + "], score:" + r.getScore()
+						+ ", text:" + r.getText());
 				results.add(new ResultText(r.getScore(), r.getText()));
 			}
 		}
-		
+
 		if (target instanceof Event) {
 			((Event) target).setSuggestion(result.getSuggestion());
 			((Event) target).setRecognitionResult(results);
 		}
 		return results;
 	}
-	
+
 	private void createVocalizerAndRecognizer() {
 		mVocalizer = mSpeechKit.createVocalizerWithLanguage(
 				mSettings.getTtsLanguage(), mSpeakListener, null);
@@ -156,7 +174,7 @@ public class Engine implements AppSettings.SettingChangeListener{
 
 		mRecognizer = mSpeechKit.createRecognizer(
 				Recognizer.RecognizerType.Dictation,
-				Recognizer.EndOfSpeechDetection.Long,
+				Recognizer.EndOfSpeechDetection.Short,
 				mSettings.getTtsLanguage(), mDictationListener, null);
 		l.debug("Engine inited with language:" + mSettings.getTtsLanguage()
 				+ ", voice:" + mSettings.getTtsVoice());
@@ -206,7 +224,7 @@ public class Engine implements AppSettings.SettingChangeListener{
 		}
 
 	};
-	
+
 	private Vocalizer.Listener mSpeakListener = new Vocalizer.Listener() {
 
 		@Override
@@ -232,9 +250,9 @@ public class Engine implements AppSettings.SettingChangeListener{
 
 	@Override
 	public void onChange(AppSettings settings, BitSet set) {
-		if(set.intersects(mCheckBitSet)) {
-			//TODO, we will update our mVocalizer and mRecognizer here.
-			synchronized(mSpeechKit) {
+		if (set.intersects(mCheckBitSet)) {
+			// TODO, we will update our mVocalizer and mRecognizer here.
+			synchronized (mSpeechKit) {
 				createVocalizerAndRecognizer();
 			}
 			l.debug("Recreate createVocalizerAndRecognizer by settings changed.");

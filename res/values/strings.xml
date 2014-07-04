@@ -9,6 +9,8 @@
     <string name="enable_notification_service_content">Im Driving depends on notification service, please enable it.</string>
 	<string name="test_notification_title">Welcome to I am driving</string>
 	<string name="test_notification_content">Wish you a good journey</string>
+	<string name="new_notification_title">The title is %1$s</string>
+	<string name="new_notification_content">The content is %1$s</string>
 	<string name="new_notification_auto_read">New notification from %1$s</string>
 	<string name="new_notification_none_auto_read">New notification from %1$s, say yes to read or no to ignore.</string>
 	<string name="new_short_message_auto_read">New short message</string>

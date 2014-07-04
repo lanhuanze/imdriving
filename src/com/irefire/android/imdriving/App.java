@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.res.Configuration;
 
 import com.irefire.android.imdriving.utils.NaunceInfo;
+import com.nuance.nmdp.speechkit.Prompt;
 import com.nuance.nmdp.speechkit.SpeechKit;
 
 public class App extends Application {
@@ -16,6 +17,13 @@ public class App extends Application {
 		sSpeechKit = SpeechKit.initialize(this, NaunceInfo.SpeechKitAppId,
 				NaunceInfo.SpeechKitServer, NaunceInfo.SpeechKitPort,
 				NaunceInfo.SpeechKitSsl, NaunceInfo.SpeechKitApplicationKey);
+		new Thread() {
+			public void run() {
+				sSpeechKit.connect();
+				Prompt beep = sSpeechKit.defineAudioPrompt(R.raw.beep);
+				sSpeechKit.setDefaultRecognizerPrompts(beep, Prompt.vibration(100), null, null);
+			}
+		}.start();
 	}
 
 	@Override

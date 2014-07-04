@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.AlertDialog.Builder;
+import android.app.Dialog;
 import android.app.Fragment;
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -15,6 +16,7 @@ import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.media.AudioManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.LayoutInflater;
@@ -46,6 +48,7 @@ public class MainActivity extends Activity {
 						@Override
 						public void onClick(DialogInterface dialog, int which) {
 							dialog.dismiss();
+							mNotificationServiceDialog = null;
 							startActivity(new Intent(
 									"android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS"));
 						}
@@ -57,11 +60,13 @@ public class MainActivity extends Activity {
 						@Override
 						public void onClick(DialogInterface dialog, int which) {
 							dialog.dismiss();
+							mNotificationServiceDialog = null;
 							MainActivity.this.finish();
 						}
 					});
 
-			builder.create().show();
+			mNotificationServiceDialog = builder.create();
+			mNotificationServiceDialog.show();
 		}
 	};
 
@@ -70,6 +75,8 @@ public class MainActivity extends Activity {
 	private NotificationManager mNotificationManager = null;
 
 	private static final Logger l = LoggerFactory.getLogger(MainActivity.class);
+	
+	private Dialog mNotificationServiceDialog = null;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -87,6 +94,8 @@ public class MainActivity extends Activity {
 		
 		// test we will start our service automatically.
 		NotifcationProcessor.getInstance().start();
+		
+		setVolumeControlStream(AudioManager.STREAM_MUSIC); // So that the 'Media Volume' applies to this activity
 	}
 
 	@Override
@@ -173,6 +182,11 @@ public class MainActivity extends Activity {
 				// if we receive notification enabled broadcast, we will
 				// re move the mShowEnableNotificationDialog.
 				mHandler.removeCallbacks(mShowEnableNotificationDialog);
+				
+				if(mNotificationServiceDialog != null && mNotificationServiceDialog.isShowing()) {
+					mNotificationServiceDialog.dismiss();
+				}
+				mNotificationServiceDialog = null;
 				l.debug("remove mShowEnableNotificationDialog");
 			}
 		}

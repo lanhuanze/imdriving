@@ -12,15 +12,19 @@
         <item>ALL RIGHT</item>
         <item>START</item>
         <item>BEGIN</item>
-        <item>NOP</item>
     </string-array>
     
     <string-array name="negative_words">
         <item>NO</item>
         <item>NOT</item>
         <item>BAD</item>
-        <item>STOP</item>
         <item>NOPE</item>
         <item>DISAGREE</item>
+    </string-array>
+    
+    <string-array name="stop_words">
+        <item>STOP</item>
+        <item>SHUTUP</item>
+        <item>SLEEP</item>
     </string-array>
 </resources>

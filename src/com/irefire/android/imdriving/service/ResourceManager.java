@@ -1,6 +1,8 @@
 package com.irefire.android.imdriving.service;
 
+import java.util.Arrays;
 import java.util.BitSet;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -14,13 +16,15 @@ import android.content.pm.PackageManager.NameNotFoundException;
 import android.text.TextUtils;
 
 import com.irefire.android.imdriving.App;
+import com.irefire.android.imdriving.R;
 import com.irefire.android.imdriving.utils.AppSettings;
 import com.irefire.android.imdriving.utils.AppSettings.SettingChangeListener;
 import com.irefire.android.imdriving.utils.AppSettings.SettingItem;
 
-public class AppNameManager implements SettingChangeListener {
-	
-	private static final Logger l = LoggerFactory.getLogger(AppNameManager.class);
+public class ResourceManager implements SettingChangeListener {
+
+	private static final Logger l = LoggerFactory
+			.getLogger(ResourceManager.class);
 
 	private Map<String, String> cachedPackageNames = new ConcurrentHashMap<String, String>();
 
@@ -28,20 +32,30 @@ public class AppNameManager implements SettingChangeListener {
 
 	private PackageManager pm = null;
 
+	private List<String> positiveWords;
+	private List<String> negativeWords;
+	private List<String> stopWords;
+
 	private BitSet mCheckBitSet = new BitSet();
 
 	private static final class Holder {
-		public static final AppNameManager _INST = new AppNameManager();
+		public static final ResourceManager _INST = new ResourceManager();
 	}
 
-	public static AppNameManager getInstance() {
+	public static ResourceManager getInstance() {
 		return Holder._INST;
 	}
 
-	private AppNameManager() {
+	private ResourceManager() {
 		mContext = App.getStaticContext();
 		pm = mContext.getPackageManager();
 		mCheckBitSet.set(SettingItem.LANGUAGE.ordinal());
+		positiveWords = Arrays.asList(mContext.getResources().getStringArray(
+				R.array.positive_words));
+		negativeWords = Arrays.asList(mContext.getResources().getStringArray(
+				R.array.negative_words));
+		stopWords = Arrays.asList(mContext.getResources().getStringArray(
+				R.array.stop_words));
 		AppSettings.getInstance().addListener(this);
 	}
 
@@ -60,21 +74,33 @@ public class AppNameManager implements SettingChangeListener {
 		}
 		String name = cachedPackageNames.get(pkgName);
 		if (!TextUtils.isEmpty(name)) {
-			l.debug("Get app name from cache pkgName:" + pkgName +",name:" + name);
+			l.debug("Get app name from cache pkgName:" + pkgName + ",name:"
+					+ name);
 			return name;
 		}
 		try {
 			ApplicationInfo app = pm.getApplicationInfo(pkgName, 0);
 			name = pm.getApplicationLabel(app).toString();
-			l.debug("Get a new app name and put it to cache, pkgName:" + pkgName +", name:" + name);
-			if(!TextUtils.isEmpty(name)) {
+			l.debug("Get a new app name and put it to cache, pkgName:"
+					+ pkgName + ", name:" + name);
+			if (!TextUtils.isEmpty(name)) {
 				cachedPackageNames.put(pkgName, name);
 			}
 		} catch (NameNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			l.warn("getAppName got exception:" + e);
 		}
 		return name;
 	}
+	
+	public boolean wordPositive(String word) {
+		return positiveWords.contains(word);
+	}
 
+	public boolean wordNegative(String word) {
+		return negativeWords.contains(word);
+	}
+	
+	public boolean wordStop(String word) {
+		return stopWords.contains(word);
+	}
 }
