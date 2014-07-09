@@ -3,6 +3,7 @@ package com.irefire.android.imdriving.utils;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.List;
+import java.util.Locale;
 
 import android.text.TextUtils;
 
@@ -15,6 +16,8 @@ public class AppSettings {
 	
 	private String ttsLanguage = "cmn-CHN"; //中文
 	private String ttsVoice = "Samantha";
+	
+	private Locale mLocale = Locale.US;
 	
 	private BitSet changeSet = new BitSet();
 	
@@ -100,6 +103,14 @@ public class AppSettings {
 		 changeSet.clear();
 	}
 	
+	public Locale getLocale() {
+		return mLocale;
+	}
+
+	public void setLocale(Locale mLocale) {
+		this.mLocale = mLocale;
+	}
+
 	public static enum SettingItem {
 		LANGUAGE, VOICE, AUTOREAD;
 	}

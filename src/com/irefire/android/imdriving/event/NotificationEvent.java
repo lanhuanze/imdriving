@@ -5,9 +5,14 @@ import org.slf4j.LoggerFactory;
 
 import android.content.Context;
 
+import com.irefire.android.imdriving.engine.Engine.EngineResult;
+
 public class NotificationEvent extends Event {
 	
 	private static final Logger l = LoggerFactory.getLogger(NotificationEvent.class);
+	
+	private String notificationTitle;
+	private String notificationContent;
 	
 	public NotificationEvent(Context c) {
 		super(c);
@@ -15,23 +20,16 @@ public class NotificationEvent extends Event {
 
 	@Override
 	public void positiveAction() {
-		l.debug("speak title:" + title);
-		mEngine.speak(title, this);
-		
-		// Sleep 0.5 to make sound better.
-		try {
-			Thread.sleep(500);
-		} catch (InterruptedException e) {
-			l.warn("positiveAction sleep exception:" + e);
-		}
-		
-		l.debug("speak content:" + content);
-		mEngine.speak(content, this);
+		String readText = notificationTitle + ". " + notificationContent;
+		EngineResult result = mEngine.speak(readText, this);
+		l.debug("Speak:" + readText +", returns " + result);
+		this.setNextAction(NextAction.ACTION_DONE);
 	}
 
 	@Override
 	public void negativeAction() {
 		l.debug("Negative action do nothing.");
+		this.setNextAction(NextAction.ACTION_DONE);
 	}
 
 	@Override
@@ -41,21 +39,51 @@ public class NotificationEvent extends Event {
 		 */
 		return true;
 	}
+	
+	@Override
+	public void dictateContent() {
+		l.error("This method should not invoked in this class.");
+	}
 
 	@Override
-	public void dectateContent() {
+	public boolean speakAskIfReadMessage() {
 		// TODO Auto-generated method stub
-		
+		return false;
 	}
 
 	@Override
-	public void tryAgain() {
-	}
-
-	@Override
-	public void reply() {
+	public boolean speakAskIfReply() {
 		// TODO Auto-generated method stub
-		
+		return false;
 	}
 
+	@Override
+	public boolean speakStartDictateContent() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean speakAskIfReadMessageAgain() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	public String getNotificationTitle() {
+		return notificationTitle;
+	}
+
+	public void setNotificationTitle(String notificationTitle) {
+		this.notificationTitle = notificationTitle;
+	}
+
+	public String getNotificationContent() {
+		return notificationContent;
+	}
+
+	public void setNotificationContent(String notificationContent) {
+		this.notificationContent = notificationContent;
+	}
+	
+	
 }

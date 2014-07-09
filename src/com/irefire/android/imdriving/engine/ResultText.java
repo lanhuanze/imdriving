@@ -1,4 +1,4 @@
-package com.irefire.android.imdriving.service;
+package com.irefire.android.imdriving.engine;
 
 public class ResultText implements Comparable<ResultText> {
 	private int score;
