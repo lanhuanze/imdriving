@@ -4,6 +4,7 @@ import android.app.Application;
 import android.content.Context;
 import android.content.res.Configuration;
 
+import com.irefire.android.imdriving.engine.SystemEngine;
 import com.irefire.android.imdriving.utils.NaunceInfo;
 import com.nuance.nmdp.speechkit.Prompt;
 import com.nuance.nmdp.speechkit.SpeechKit;
@@ -24,6 +25,8 @@ public class App extends Application {
 				sSpeechKit.setDefaultRecognizerPrompts(beep, Prompt.vibration(100), null, null);
 			}
 		}.start();
+		
+		SystemEngine.isSystemEngineSupported(this);
 	}
 
 	@Override
