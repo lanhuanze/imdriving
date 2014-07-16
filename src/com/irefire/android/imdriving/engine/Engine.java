@@ -14,7 +14,7 @@ public interface Engine {
 	 * @param target 用户的
 	 * @return
 	 */
-	public EngineResult speak(String text, Event e);
+	public SpeakResult speak(String text, Event e);
 	
 	/**
 	 * 听写文字，要等有识别结果了才返回

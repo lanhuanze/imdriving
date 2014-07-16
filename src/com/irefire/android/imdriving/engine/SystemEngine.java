@@ -1,6 +1,9 @@
 package com.irefire.android.imdriving.engine;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -132,7 +135,7 @@ public class SystemEngine implements Engine {
 		} else {
 			mTextToSpeech = new TextToSpeech(mContext, mTextToSpeechInitListener);
 		}
-
+		mTextToSpeech.setOnUtteranceProgressListener(mSpeakListener);
 		initialized = true;
 	}
 
@@ -144,11 +147,31 @@ public class SystemEngine implements Engine {
 
 	private Context mContext;
 
+	private SpeakListener mSpeakListener = new SpeakListener();
+
 	@Override
-	public synchronized EngineResult speak(String text, Event e) {
+	public synchronized SpeakResult speak(String text, Event e) {
 		assert initialized;
-		// TODO Auto-generated method stub
-		return null;
+		SpeakResult result = new SpeakResult();
+		result.utteranceId = String.valueOf(System.currentTimeMillis());
+		HashMap<String, String> params = new HashMap<String, String>();
+		params.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, result.utteranceId);
+		mSpeakListener.add(result);
+		int retValue = mTextToSpeech.speak(text, TextToSpeech.QUEUE_ADD, params);
+		l.debug("speak text:" + text + ", returns " + retValue);
+		if (TextToSpeech.SUCCESS == retValue) {
+			// 我们要等到说完了才返回,通知在SpeakListener里。
+			try {
+				synchronized (result) {
+					result.wait();
+				}
+			} catch (InterruptedException e1) {
+				l.warn("InterruptedException occurred when waiting for result.");
+			}
+		}else {
+			result.result = Engine.EngineResult.FAILED;
+		}
+		return result;
 	}
 
 	private static boolean isPackageEnabled(String packageName, PackageManager pm) {
@@ -165,12 +188,12 @@ public class SystemEngine implements Engine {
 	@Override
 	public synchronized DictationResult dictateText(Event e, long timeout) {
 		DictationResult result = new DictationResult();
-		RecognitionListener listener = new RecognizerListener(result);
+		RecognizerListener listener = new RecognizerListener(result);
 		assert initialized;
 		Intent recognizerIntent = new Intent();
 		mSpeechRecognizer.setRecognitionListener(listener);
 		mSpeechRecognizer.startListening(recognizerIntent);
-		return null;
+		return result;
 	}
 
 	private static final class RecognizerListener implements RecognitionListener {
@@ -234,32 +257,74 @@ public class SystemEngine implements Engine {
 
 		}
 	}
-	
+
 	private static final class SpeakListener extends UtteranceProgressListener {
-		private SpeakResult target;
-		
-		public SpeakListener(SpeakResult result) {
-			target = result;
+		private Map<String, SpeakResult> targets;
+
+		public SpeakListener() {
+			targets = new HashMap<String, SpeakResult>();
 		}
 
 		@Override
 		public void onStart(String utteranceId) {
-			// TODO Auto-generated method stub
-			
+			SpeakResult result = targets.get(utteranceId);
+			if(result == null) {
+				l.warn("Get result of " + utteranceId + " is empty.");
+				return;
+			}
+			result.speakStartTime = System.currentTimeMillis();
 		}
 
 		@Override
 		public void onDone(String utteranceId) {
-			// TODO Auto-generated method stub
+			SpeakResult result = targets.get(utteranceId);
+			if(result == null) {
+				l.warn("Get result of " + utteranceId + " is empty.");
+				return;
+			}
+			result.speakEndTime = System.currentTimeMillis();
 			
+			synchronized (targets) {
+				l.debug("remove result of " + utteranceId);
+				targets.remove(utteranceId);
+			}
+			
+			synchronized(result) {
+				result.notifyAll();
+			}
 		}
 
 		@Override
 		public void onError(String utteranceId) {
-			// TODO Auto-generated method stub
+			SpeakResult result = targets.get(utteranceId);
+			if(result == null) {
+				l.warn("Get result of " + utteranceId + " is empty.");
+				return;
+			}
+			result.speakEndTime = System.currentTimeMillis();
+			result.result = Engine.EngineResult.FAILED;
 			
+			synchronized (targets) {
+				l.debug("remove result of " + utteranceId);
+				targets.remove(utteranceId);
+			}
+			
+			synchronized(result) {
+				result.notifyAll();
+			}
+
 		}
-		
+
+		public void add(SpeakResult sr) {
+			if (sr == null) {
+				l.warn("Try to add a null SpeakResult");
+				return;
+			}
+			synchronized (targets) {
+				targets.put(sr.utteranceId, sr);
+			}
+		}
+
 	}
 
 	private TextToSpeech.OnInitListener mTextToSpeechInitListener = new TextToSpeech.OnInitListener() {
