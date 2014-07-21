@@ -3,57 +3,37 @@ package com.irefire.android.imdriving;
 import android.app.Application;
 import android.content.Context;
 import android.content.res.Configuration;
-
 import com.irefire.android.imdriving.engine.SystemEngine;
-import com.irefire.android.imdriving.utils.NaunceInfo;
-import com.nuance.nmdp.speechkit.Prompt;
-import com.nuance.nmdp.speechkit.SpeechKit;
 
 public class App extends Application {
 
-	@Override
-	public void onCreate() {
-		sContext = this;
-		super.onCreate();
-		sSpeechKit = SpeechKit.initialize(this, NaunceInfo.SpeechKitAppId,
-				NaunceInfo.SpeechKitServer, NaunceInfo.SpeechKitPort,
-				NaunceInfo.SpeechKitSsl, NaunceInfo.SpeechKitApplicationKey);
-		new Thread() {
-			public void run() {
-				sSpeechKit.connect();
-				Prompt beep = sSpeechKit.defineAudioPrompt(R.raw.beep);
-				sSpeechKit.setDefaultRecognizerPrompts(beep, Prompt.vibration(100), null, null);
-			}
-		}.start();
-		
-		SystemEngine.isSystemEngineSupported(this);
-	}
+    private static Context sContext;
 
-	@Override
-	public void onTerminate() {
-		// TODO Auto-generated method stub
-		super.onTerminate();
-		sContext = null;
-		sSpeechKit.release();
-	}
+    public static Context getStaticContext() {
+        assert sContext != null;
+        return sContext;
+    }
 
-	@Override
-	public void onConfigurationChanged(Configuration newConfig) {
-		// TODO Auto-generated method stub
-		super.onConfigurationChanged(newConfig);
-	}
+    @Override
+    public void onCreate() {
+        sContext = this;
+        super.onCreate();
+        //SystemEngine.isSystemEngineSupported(this);
+        // android.speech.SpeechRecognizer.createSpeechRecognizer can be only invoked in
+        // Main thread, so we call it here.
+        SystemEngine.getInstance();
+    }
 
-	private static SpeechKit sSpeechKit;
-	
-	public static SpeechKit getSpeechKit() {
-		assert sSpeechKit != null;
-		return sSpeechKit;
-	}
-	
-	private static Context sContext;
-	
-	public static Context getStaticContext() {
-		assert sContext != null;
-		return sContext;
-	}
+    @Override
+    public void onTerminate() {
+        // TODO Auto-generated method stub
+        super.onTerminate();
+        sContext = null;
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        // TODO Auto-generated method stub
+        super.onConfigurationChanged(newConfig);
+    }
 }

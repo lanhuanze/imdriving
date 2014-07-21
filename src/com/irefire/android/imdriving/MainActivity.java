@@ -41,6 +41,7 @@ public class MainActivity extends Activity {
 			builder.setMessage(R.string.enable_notification_service_content);
 
 			builder.setTitle(R.string.enable_notification_service_title);
+            builder.setCancelable(false);
 
 			builder.setPositiveButton(android.R.string.ok,
 					new OnClickListener() {
@@ -67,6 +68,7 @@ public class MainActivity extends Activity {
 
 			mNotificationServiceDialog = builder.create();
 			mNotificationServiceDialog.show();
+            isNotificationServiceDialogShowing = true;
 		}
 	};
 
@@ -77,6 +79,7 @@ public class MainActivity extends Activity {
 	private static final Logger l = LoggerFactory.getLogger(MainActivity.class);
 	
 	private Dialog mNotificationServiceDialog = null;
+    private boolean isNotificationServiceDialogShowing = false;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -141,18 +144,20 @@ public class MainActivity extends Activity {
 		IntentFilter filter = new IntentFilter(Constants.NOTIFICATION_ENABLED);
 		this.registerReceiver(mNotificationCheckReceiver, filter);
 
-		// We will delay 200 to show the dialog in case we had enabled it.
-		mHandler.postDelayed(mShowEnableNotificationDialog, 200);
+        if(!isNotificationServiceDialogShowing) {
+            // We will delay 200 to show the dialog in case we had enabled it.
+            mHandler.postDelayed(mShowEnableNotificationDialog, 200);
 
-		// then we generate a notification, if the Notificationlistener received
-		// it.
-		// He will send a broadcast to {NotificationEnableReciever};
-		generateCheckNotification();
-		mHandler.postDelayed(new Runnable() {
-			public void run() {
-				cleanCheckNotification();
-			}
-		}, 50); // we will clean the notification in 50 ms.
+            // then we generate a notification, if the Notificationlistener received
+            // it.
+            // He will send a broadcast to {NotificationEnableReciever};
+            generateCheckNotification();
+            mHandler.postDelayed(new Runnable() {
+                public void run() {
+                    cleanCheckNotification();
+                }
+            }, 50); // we will clean the notification in 50 ms.
+        }
 	}
 
 	@Override
@@ -187,6 +192,7 @@ public class MainActivity extends Activity {
 					mNotificationServiceDialog.dismiss();
 				}
 				mNotificationServiceDialog = null;
+                isNotificationServiceDialogShowing = false;
 				l.debug("remove mShowEnableNotificationDialog");
 			}
 		}

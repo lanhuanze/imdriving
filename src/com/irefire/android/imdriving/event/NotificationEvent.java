@@ -1,5 +1,7 @@
 package com.irefire.android.imdriving.event;
 
+import com.irefire.android.imdriving.R;
+import com.irefire.android.imdriving.engine.SpeakResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -11,17 +13,14 @@ public class NotificationEvent extends Event {
 	
 	private static final Logger l = LoggerFactory.getLogger(NotificationEvent.class);
 	
-	private String notificationTitle;
-	private String notificationContent;
-	
 	public NotificationEvent(Context c) {
 		super(c);
 	}
 
 	@Override
 	public void positiveAction() {
-		String readText = notificationTitle + ". " + notificationContent;
-		EngineResult result = mEngine.speak(readText, this);
+		String readText = mResourceManager.getString(R.string.new_notification_title_and_content, title, content);
+		SpeakResult result = mEngine.speak(readText, this);
 		l.debug("Speak:" + readText +", returns " + result);
 		this.setNextAction(NextAction.ACTION_DONE);
 	}
@@ -68,22 +67,4 @@ public class NotificationEvent extends Event {
 		// TODO Auto-generated method stub
 		return false;
 	}
-
-	public String getNotificationTitle() {
-		return notificationTitle;
-	}
-
-	public void setNotificationTitle(String notificationTitle) {
-		this.notificationTitle = notificationTitle;
-	}
-
-	public String getNotificationContent() {
-		return notificationContent;
-	}
-
-	public void setNotificationContent(String notificationContent) {
-		this.notificationContent = notificationContent;
-	}
-	
-	
 }

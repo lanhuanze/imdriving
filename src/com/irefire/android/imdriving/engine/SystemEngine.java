@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.irefire.android.imdriving.App;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -85,12 +86,23 @@ public class SystemEngine implements Engine {
 	 * speechRecognizer.stopListening(); } }, 3000); return true; }
 	 */
 	public static final SystemEngine getInstance() {
-		return null;
+		return Holder._INST;
 	}
+
+    private static final class Holder {
+        public static final SystemEngine _INST = new SystemEngine();
+    }
+
+    private SystemEngine() {
+        init(App.getStaticContext());
+    }
 
 	private boolean initialized = false;
 
 	public synchronized void init(Context c) {
+        if(initialized) {
+            return;
+        }
 		assert c != null;
 		mContext = c;
 		PackageManager pm = c.getPackageManager();

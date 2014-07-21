@@ -103,4 +103,12 @@ public class ResourceManager implements SettingChangeListener {
 	public boolean wordStop(String word) {
 		return stopWords.contains(word);
 	}
+
+    public String getString(int resId) {
+        return mContext.getString(resId);
+    }
+
+    public String getString(int resId, Object ... args) {
+        return mContext.getString(resId, args);
+    }
 }

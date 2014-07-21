@@ -1,5 +1,7 @@
 package com.irefire.android.imdriving.event;
 
+import com.irefire.android.imdriving.R;
+import com.irefire.android.imdriving.engine.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -7,10 +9,7 @@ import android.content.Context;
 import android.service.notification.StatusBarNotification;
 
 import com.irefire.android.imdriving.App;
-import com.irefire.android.imdriving.engine.DictationResult;
-import com.irefire.android.imdriving.engine.Engine;
 import com.irefire.android.imdriving.engine.Engine.EngineResult;
-import com.irefire.android.imdriving.engine.ResultText;
 import com.irefire.android.imdriving.service.ResourceManager;
 import com.irefire.android.imdriving.utils.AppSettings;
 import com.irefire.android.imdriving.utils.Constants;
@@ -40,7 +39,26 @@ public abstract class Event {
 	 */
 	protected String tips;
 
-	/**
+    protected  String title;
+    protected  String content;
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public String getContent() {
+        return content;
+    }
+
+    public void setContent(String content) {
+        this.content = content;
+    }
+
+    /**
 	 * 回复的内容。
 	 */
 	protected String replyContent;
@@ -49,7 +67,7 @@ public abstract class Event {
 
 	public Event(Context c) {
 		mContext = c;
-		// mEngine = NuanceEngine.getInstance();
+		mEngine = SystemEngine.getInstance();
 		mAppSettings = AppSettings.getInstance();
 		mResourceManager = ResourceManager.getInstance();
 	}
@@ -58,10 +76,10 @@ public abstract class Event {
 	 * 说信息到来的提示。
 	 */
 	public final boolean speakArrivingTip() {
-		EngineResult result = mEngine.speak(tips, this);
+		SpeakResult result = mEngine.speak(tips, this);
 		l.debug("speakArrivingTip tips:" + tips +" , returns:" + result);
 		
-		if(result == EngineResult.OK) {
+		if(result.result == EngineResult.OK) {
 			if(this.autoActionable() && mAppSettings.isAutoRead()) {
 				this.setNextAction(NextAction.ACTION_POSITIVE);
 			}else {
@@ -71,7 +89,7 @@ public abstract class Event {
 			this.setNextAction(NextAction.ACTION_DONE);
 		}
 		
-		return EngineResult.OK == result;
+		return EngineResult.OK == result.result;
 	}
 
 	/**
@@ -237,6 +255,7 @@ public abstract class Event {
 	public abstract void negativeAction();
 
 	public static final Event createEvent(StatusBarNotification sbn) {
+        ResourceManager rm = ResourceManager.getInstance();
 		String name = ResourceManager.getInstance().getAppName(
 				sbn.getPackageName());
 		boolean autoRead = AppSettings.getInstance().isAutoRead();
@@ -244,6 +263,9 @@ public abstract class Event {
 		Event event = new NotificationEvent(c);
 		String title = NotificationUtils.getTitle(sbn.getNotification());
 		String content = NotificationUtils.getContent(sbn.getNotification());
+        event.setTips(rm.getString(R.string.new_notification_tip, name));
+        event.setTitle(title);
+        event.setContent(content);
 		return event;
 	}
 	

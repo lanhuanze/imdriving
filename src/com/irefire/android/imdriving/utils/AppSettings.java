@@ -12,7 +12,7 @@ public class AppSettings {
 	/**
 	 * Read the notification without 
 	 */
-	private boolean autoRead = false;
+	private boolean autoRead = true;
 	
 	private String ttsLanguage = "cmn-CHN"; //中文
 	private String ttsVoice = "Samantha";
