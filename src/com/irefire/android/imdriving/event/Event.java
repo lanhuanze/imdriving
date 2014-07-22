@@ -146,6 +146,7 @@ public abstract class Event {
 
 			if (mResourceManager.wordStop(text)) {
 				this.setNextAction(NextAction.SPEAK_ABOAT_ABORTING);
+                abortingCommand = text;
 				matchCommand = true;
 				break;
 			}
@@ -291,7 +292,7 @@ public abstract class Event {
 		return event;
 	}
 	
-	private static final Logger l = LoggerFactory.getLogger(Event.class);
+	private static final Logger l = LoggerFactory.getLogger(Event.class.getSimpleName());
 
 	/**
 	 * Event 当时的状态。

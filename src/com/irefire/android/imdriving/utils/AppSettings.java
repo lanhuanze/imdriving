@@ -12,7 +12,7 @@ public class AppSettings {
 	/**
 	 * Read the notification without 
 	 */
-	private boolean autoRead = true;
+	private boolean autoRead = false;
 	
 	private String ttsLanguage = "cmn-CHN"; //中文
 	private String ttsVoice = "Samantha";
@@ -41,7 +41,7 @@ public class AppSettings {
 
 	public void setAutoReadWithoutAsk(boolean autoRead) {
 		if(this.autoRead != autoRead) {
-			changeSet.set(SettingItem.AUTOREAD.ordinal());
+			changeSet.set(SettingItem.AUTO_READ.ordinal());
 		}
 		this.autoRead = autoRead;
 	}
@@ -112,6 +112,18 @@ public class AppSettings {
 	}
 
 	public static enum SettingItem {
-		LANGUAGE, VOICE, AUTOREAD;
+		LANGUAGE, VOICE, AUTO_READ;
 	}
+
+    /**
+     * check if ignore the notification from this package.
+     * Such as InputMethod, DownloadManager etc.
+     * @param packageName
+     * @return
+     */
+    public boolean ignoreNotification(String packageName) {
+        return mIgnorePackages.contains(packageName);
+    }
+
+    private List<String> mIgnorePackages = new ArrayList<String>();
 }

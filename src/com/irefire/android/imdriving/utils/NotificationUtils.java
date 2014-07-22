@@ -12,7 +12,7 @@ import android.os.Bundle;
 
 public class NotificationUtils {
 	private static final Logger l = LoggerFactory
-			.getLogger(NotificationUtils.class);
+			.getLogger(NotificationUtils.class.getSimpleName());
 
 	@SuppressLint("NewApi")
 	public static final String getTitle(Notification n) {

@@ -11,7 +11,7 @@ import com.irefire.android.imdriving.engine.Engine.EngineResult;
 
 public class NotificationEvent extends Event {
 	
-	private static final Logger l = LoggerFactory.getLogger(NotificationEvent.class);
+	private static final Logger l = LoggerFactory.getLogger(NotificationEvent.class.getSimpleName());
 	
 	public NotificationEvent(Context c) {
 		super(c);
@@ -50,10 +50,11 @@ public class NotificationEvent extends Event {
         SpeakResult result = mEngine.speak(askText, this);
         l.debug("Speak:" + askText +", returns " + result);
         if(result.result == EngineResult.OK) {
+
+            this.setNextAction(NextAction.ACTION_DICTATE_IF_READ_NOTIFICATION);
+        }else {
             l.warn("Error speak:" + askText);
             this.setNextAction(NextAction.ACTION_DONE);
-        }else {
-            this.setNextAction(NextAction.ACTION_DICTATE_IF_READ_NOTIFICATION);
         }
 		return result.result == EngineResult.OK;
 	}
@@ -76,10 +77,10 @@ public class NotificationEvent extends Event {
         SpeakResult result = mEngine.speak(askText, this);
         l.debug("Speak:" + askText +", returns " + result);
         if(result.result == EngineResult.OK) {
+            this.setNextAction(NextAction.ACTION_DICTATE_IF_READ_NOTIFICATION);
+        }else {
             l.warn("Error speak:" + askText);
             this.setNextAction(NextAction.ACTION_DONE);
-        }else {
-            this.setNextAction(NextAction.ACTION_DICTATE_IF_READ_NOTIFICATION);
         }
         return result.result == EngineResult.OK;
 	}

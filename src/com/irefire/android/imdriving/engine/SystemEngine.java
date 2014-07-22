@@ -1,10 +1,8 @@
 package com.irefire.android.imdriving.engine;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
+import android.os.Handler;
 import com.irefire.android.imdriving.App;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,10 +26,11 @@ import com.irefire.android.imdriving.event.Event;
 
 public class SystemEngine implements Engine {
 
-	private static final Logger l = LoggerFactory.getLogger(SystemEngine.class);
+	private static final Logger l = LoggerFactory.getLogger(SystemEngine.class.getSimpleName());
 
 	public static boolean isSystemEngineSupported(Context c) {
 		assert c != null;
+        l.debug("isRecognitionAvailable = " + SpeechRecognizer.isRecognitionAvailable(c));
 		PackageManager pm = c.getPackageManager();
 		boolean enabledPackage = false;
 		List<ResolveInfo> services = pm.queryIntentServices(new Intent(RecognitionService.SERVICE_INTERFACE), 0);
@@ -71,20 +70,6 @@ public class SystemEngine implements Engine {
 		}
 	}
 
-	/*
-	 * final SpeechRecognizer speechRecognizer =
-	 * SpeechRecognizer.createSpeechRecognizer(this, reconitionComponent);
-	 * Log.d("XXXXX", "supported language:" + speechRecognizer);
-	 * 
-	 * speechRecognizer.setRecognitionListener(mRecognitionListener); Intent
-	 * recognizerIntent = new Intent();
-	 * recognizerIntent.setAction(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
-	 * recognizerIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "zh_CN");
-	 * speechRecognizer.startListening(recognizerIntent);
-	 * 
-	 * mHandler.postDelayed(new Runnable() { public void run() {
-	 * speechRecognizer.stopListening(); } }, 3000); return true; }
-	 */
 	public static final SystemEngine getInstance() {
 		return Holder._INST;
 	}
@@ -105,6 +90,9 @@ public class SystemEngine implements Engine {
         }
 		assert c != null;
 		mContext = c;
+
+        mMainThreadHandler = new Handler(mContext.getMainLooper());
+
 		PackageManager pm = c.getPackageManager();
 
 		List<ResolveInfo> services = pm.queryIntentServices(new Intent(RecognitionService.SERVICE_INTERFACE), 0);
@@ -126,9 +114,10 @@ public class SystemEngine implements Engine {
 		}
 
 		assert serviceInfo != null;
-
+        l.debug("SpeechRecognizer(" + serviceInfo.packageName +"/" + serviceInfo.name +")");
 		mSpeechRecognizer = SpeechRecognizer.createSpeechRecognizer(c, new ComponentName(serviceInfo.packageName,
-				serviceInfo.applicationInfo.className));
+				serviceInfo.name));
+        //mSpeechRecognizer = SpeechRecognizer.createSpeechRecognizer(c);
 
 		services = pm.queryIntentServices(new Intent(TextToSpeech.Engine.INTENT_ACTION_TTS_SERVICE), 0);
 		serviceInfo = null;
@@ -158,6 +147,8 @@ public class SystemEngine implements Engine {
 	private TextToSpeech mTextToSpeech;
 
 	private Context mContext;
+
+    private Handler mMainThreadHandler = null;
 
 	private SpeakListener mSpeakListener = new SpeakListener();
 
@@ -202,30 +193,48 @@ public class SystemEngine implements Engine {
 	@Override
 	public synchronized DictationResult dictateText(Event e, long timeout) {
 		DictationResult result = new DictationResult();
-		RecognizerListener listener = new RecognizerListener(result);
+		final RecognizerListener listener = new RecognizerListener(result);
 		assert initialized;
-		Intent recognizerIntent = new Intent();
-		mSpeechRecognizer.setRecognitionListener(listener);
-		mSpeechRecognizer.startListening(recognizerIntent);
+		final Intent recognizerIntent = new Intent();
+
+        // we must call this from main thread.
+        mMainThreadHandler.post( new Runnable() {
+            @Override
+            public void run() {
+                mSpeechRecognizer.setRecognitionListener(listener);
+                mSpeechRecognizer.startListening(recognizerIntent);
+            }
+        });
+
         if(timeout > 0) synchronized (result) {
             try {
+                l.debug("waiting for speech finish.");
                 result.wait(timeout);
             } catch (InterruptedException e1) {
                 l.warn("result timeout wait error:" + e1);
             }
         }
-        mSpeechRecognizer.stopListening();
+
+        // we must call this from main thread.
+        mMainThreadHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                mSpeechRecognizer.stopListening();
+            }
+        });
+
 
         synchronized (result) {
             if(!listener.isDictateFinished()) {
                 try {
+                    l.debug("waiting for dictate result.");
                     result.wait();
                 } catch (InterruptedException e1) {
                     l.warn("result wait dictate error:" + e1);
                 }
             }
         }
-
+        l.debug("dictateText result:" + result);
 		return result;
 	}
 
@@ -291,8 +300,11 @@ public class SystemEngine implements Engine {
 		public void onResults(Bundle results) {
             ArrayList<String> texts = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
             float[] scores = results.getFloatArray(SpeechRecognizer.CONFIDENCE_SCORES);
+            l.debug("onResults texts: " + texts);
+            l.debug("onResults scores:" + Arrays.toString(scores));
             for(int i = 0; i < texts.size(); i++) {
                 ResultText rt = new ResultText();
+                rt.setText(texts.get(i));
                 rt.setScore((int)(scores[i] * 100));
                 target.texts.add(rt);
             }

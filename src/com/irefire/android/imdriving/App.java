@@ -18,7 +18,7 @@ public class App extends Application {
     public void onCreate() {
         sContext = this;
         super.onCreate();
-        //SystemEngine.isSystemEngineSupported(this);
+        SystemEngine.isSystemEngineSupported(this);
         // android.speech.SpeechRecognizer.createSpeechRecognizer can be only invoked in
         // Main thread, so we call it here.
         SystemEngine.getInstance();

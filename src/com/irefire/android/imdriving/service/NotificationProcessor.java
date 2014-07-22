@@ -12,16 +12,16 @@ import com.irefire.android.imdriving.event.Event;
 import com.irefire.android.imdriving.event.Event.NextAction;
 import com.irefire.android.imdriving.utils.AppSettings;
 
-public final class NotifcationProcessor {
+public final class NotificationProcessor {
 
 	private static final Logger l = LoggerFactory
-			.getLogger(NotifcationProcessor.class);
+			.getLogger(NotificationProcessor.class.getSimpleName());
 
 	private static final class Holder {
-		public static final NotifcationProcessor _INST = new NotifcationProcessor();
+		public static final NotificationProcessor _INST = new NotificationProcessor();
 	}
 
-	public static final NotifcationProcessor getInstance() {
+	public static final NotificationProcessor getInstance() {
 		return Holder._INST;
 	}
 
@@ -32,7 +32,7 @@ public final class NotifcationProcessor {
 
 	private BlockingQueue<StatusBarNotification> events = new LinkedBlockingQueue<StatusBarNotification>();
 
-	private NotifcationProcessor() {
+	private NotificationProcessor() {
 	}
 
 	public void start() {
@@ -146,7 +146,7 @@ public final class NotifcationProcessor {
 								e.speakTooManyFailedTrials();
 								break;
 							default:
-								l.error("Unknow next action:" + e.getNextAction());
+								l.error("Unknown next action:" + e.getNextAction());
 								break;
 							}
 						}

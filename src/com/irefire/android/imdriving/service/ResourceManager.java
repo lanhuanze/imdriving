@@ -24,7 +24,7 @@ import com.irefire.android.imdriving.utils.AppSettings.SettingItem;
 public class ResourceManager implements SettingChangeListener {
 
 	private static final Logger l = LoggerFactory
-			.getLogger(ResourceManager.class);
+			.getLogger(ResourceManager.class.getSimpleName());
 
 	private Map<String, String> cachedPackageNames = new ConcurrentHashMap<String, String>();
 

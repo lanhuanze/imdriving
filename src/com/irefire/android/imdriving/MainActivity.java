@@ -1,5 +1,6 @@
 package com.irefire.android.imdriving;
 
+import com.irefire.android.imdriving.service.NotificationProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,7 +26,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.irefire.android.imdriving.service.NotifcationProcessor;
 import com.irefire.android.imdriving.utils.Constants;
 import com.irefire.android.imdriving.utils.Root;
 
@@ -76,7 +76,7 @@ public class MainActivity extends Activity {
 
 	private NotificationManager mNotificationManager = null;
 
-	private static final Logger l = LoggerFactory.getLogger(MainActivity.class);
+	private static final Logger l = LoggerFactory.getLogger(MainActivity.class.getSimpleName());
 	
 	private Dialog mNotificationServiceDialog = null;
     private boolean isNotificationServiceDialogShowing = false;
@@ -96,7 +96,7 @@ public class MainActivity extends Activity {
 		mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 		
 		// test we will start our service automatically.
-		NotifcationProcessor.getInstance().start();
+		NotificationProcessor.getInstance().start();
 		
 		setVolumeControlStream(AudioManager.STREAM_MUSIC); // So that the 'Media Volume' applies to this activity
 	}

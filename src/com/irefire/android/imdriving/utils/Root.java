@@ -7,7 +7,7 @@ import org.slf4j.LoggerFactory;
 
 public class Root {
 
-	private static final Logger l = LoggerFactory.getLogger(Root.class);
+	private static final Logger l = LoggerFactory.getLogger(Root.class.getSimpleName());
 
 	public static boolean isRooted() {
 	    return findBinary("su");

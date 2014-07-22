@@ -6,4 +6,15 @@ public class SpeakResult {
 	public long speakStartTime;
 	public long speakEndTime;
     public boolean isSpeakFinish;
+
+    @Override
+    public String toString() {
+        return "SpeakResult{" +
+                "result=" + result +
+                ", utteranceId='" + utteranceId + '\'' +
+                ", speakStartTime=" + speakStartTime +
+                ", speakEndTime=" + speakEndTime +
+                ", isSpeakFinish=" + isSpeakFinish +
+                '}';
+    }
 }
