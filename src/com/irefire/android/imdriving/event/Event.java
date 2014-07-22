@@ -15,6 +15,8 @@ import com.irefire.android.imdriving.utils.AppSettings;
 import com.irefire.android.imdriving.utils.Constants;
 import com.irefire.android.imdriving.utils.NotificationUtils;
 
+import java.util.Collections;
+
 /**
  * This class is abstract class of the event.
  * 
@@ -41,6 +43,8 @@ public abstract class Event {
 
     protected  String title;
     protected  String content;
+
+    protected String abortingCommand;
 
     public String getTitle() {
         return title;
@@ -229,7 +233,25 @@ public abstract class Event {
 	}
 
 	public void dictateYesOrNo() {
-		
+		DictationResult result = mEngine.dictateText(this, Constants.LISTEN_YES_NO_TIME_OUT);
+        l.debug("dictateYesOrNo returns " + result);
+        if(result.result != EngineResult.OK || result.texts.isEmpty()) {
+            this.setNextAction(NextAction.ASK_IF_READ_NOTIFICATION);
+            return;
+        }else {
+            Collections.sort(result.texts);
+            String text = result.texts.get(0).getText();
+            if(mResourceManager.wordNegative(text)) {
+                this.setNextAction(NextAction.ACTION_NEGATIVE);
+            }else if(mResourceManager.wordPositive(text)) {
+                this.setNextAction(NextAction.ACTION_POSITIVE);
+            }else if(mResourceManager.wordStop(text)) {
+                abortingCommand = text;
+                this.setNextAction(NextAction.SPEAK_ABOAT_ABORTING);
+            }else {
+                this.setNextAction(NextAction.ASK_IF_READ_NOTIFICATION_AGAIN);
+            }
+        }
 	}
 
 	/**
@@ -383,13 +405,21 @@ public abstract class Event {
 		
 	}
 
-	public void speakAboatAborting() {
-		// TODO Auto-generated method stub
-		
+	public void speakAboutAborting() {
+		String text = mResourceManager.getString(R.string.speak_about_aborting, abortingCommand);
+        SpeakResult result = mEngine.speak(text, this);
+        l.debug("speakAboutAborting text:" + text +" , returns:" + result);
+
+        // TODO we should disable our app here.
+        this.setNextAction(NextAction.ACTION_DONE);
 	}
 
 	public void speakTooManyFailedTrials() {
-		// TODO Auto-generated method stub
-		
+        String text = mResourceManager.getString(R.string.speak_too_many_trials);
+        SpeakResult result = mEngine.speak(text, this);
+        l.debug("speakTooManyFailedTrials text:" + text +" , returns:" + result);
+
+        // TODO we should disable our app here.
+        this.setNextAction(NextAction.ACTION_DONE);
 	}
 }

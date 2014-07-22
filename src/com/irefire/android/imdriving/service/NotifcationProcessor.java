@@ -139,7 +139,7 @@ public final class NotifcationProcessor {
 								break;
 							/** 程序即将退出 */
 							case SPEAK_ABOAT_ABORTING:
-								e.speakAboatAborting();
+								e.speakAboutAborting();
 								break;
 							/** 失败次数太多 */
 							case SPEAK_TOO_MANY_FAILED_TRIALS:

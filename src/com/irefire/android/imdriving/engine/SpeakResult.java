@@ -5,4 +5,5 @@ public class SpeakResult {
 	public String utteranceId;
 	public long speakStartTime;
 	public long speakEndTime;
+    public boolean isSpeakFinish;
 }

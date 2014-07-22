@@ -5,7 +5,7 @@ import com.irefire.android.imdriving.event.Event;
 public interface Engine {
 	
 	public static enum EngineResult {
-		OK, FAILED, INVALID_PARAM, UNSUPPORT_LANGUAGE, NETWORK_ERROR;
+		OK, FAILED, INVALID_PARAM, UNSUPPORTED_LANGUAGE, NETWORK_ERROR;
 	}
 	
 	/**

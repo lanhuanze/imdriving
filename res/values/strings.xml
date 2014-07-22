@@ -4,14 +4,26 @@
     <string name="app_name">Im Driving</string>
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
-    <string name="notification_listener_name">ImDrivingNotificationService</string>
+
+
+    <string name="notification_listener_name">I'm Driving</string>
     <string name="enable_notification_service_title">Please enable notification service</string>
     <string name="enable_notification_service_content">Im Driving depends on notification service, please enable it.</string>
+
+
 	<string name="test_notification_title">Welcome to I am driving</string>
 	<string name="test_notification_content">Wish you a good journey</string>
+
+
 	<string name="new_notification_title_and_content">The title is %1$s and the content is %2$s</string>
 	<string name="new_notification_tip">You got new notification from %1$s</string>
-	<string name="new_notification_none_auto_read">New notification from %1$s, say yes to read or no to ignore.</string>
+	<string name="new_notification_ask_if_read">Say yes to read or say no to ignore.</string>
+    <string name="new_notification_ask_if_read_again">Sorry, I can here clearly, could you speak again. Say yes to read or say no to ignore</string>
+
 	<string name="new_short_message_auto_read">New short message</string>
 	<string name="new_short_message_none_auto_read">New short message, say yes to read or no to ignore.</string>
+
+
+    <string name="speak_about_aborting">I am about aborting since hearing the command %1$s</string>
+    <string name="speak_too_many_trials">Sorry, too many failed trials, I am about give up.</string>
 </resources>

@@ -46,13 +46,21 @@ public class NotificationEvent extends Event {
 
 	@Override
 	public boolean speakAskIfReadMessage() {
-		// TODO Auto-generated method stub
-		return false;
+		String askText = mResourceManager.getString(R.string.new_notification_ask_if_read);
+        SpeakResult result = mEngine.speak(askText, this);
+        l.debug("Speak:" + askText +", returns " + result);
+        if(result.result == EngineResult.OK) {
+            l.warn("Error speak:" + askText);
+            this.setNextAction(NextAction.ACTION_DONE);
+        }else {
+            this.setNextAction(NextAction.ACTION_DICTATE_IF_READ_NOTIFICATION);
+        }
+		return result.result == EngineResult.OK;
 	}
 
 	@Override
 	public boolean speakAskIfReply() {
-		// TODO Auto-generated method stub
+		l.error("This method should not invoked in this class");
 		return false;
 	}
 
@@ -64,7 +72,15 @@ public class NotificationEvent extends Event {
 
 	@Override
 	public boolean speakAskIfReadMessageAgain() {
-		// TODO Auto-generated method stub
-		return false;
+        String askText = mResourceManager.getString(R.string.new_notification_ask_if_read_again);
+        SpeakResult result = mEngine.speak(askText, this);
+        l.debug("Speak:" + askText +", returns " + result);
+        if(result.result == EngineResult.OK) {
+            l.warn("Error speak:" + askText);
+            this.setNextAction(NextAction.ACTION_DONE);
+        }else {
+            this.setNextAction(NextAction.ACTION_DICTATE_IF_READ_NOTIFICATION);
+        }
+        return result.result == EngineResult.OK;
 	}
 }

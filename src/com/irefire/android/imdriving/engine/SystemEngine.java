@@ -175,7 +175,9 @@ public class SystemEngine implements Engine {
 			// 我们要等到说完了才返回,通知在SpeakListener里。
 			try {
 				synchronized (result) {
-					result.wait();
+                    if(!result.isSpeakFinish) {
+                        result.wait();
+                    }
 				}
 			} catch (InterruptedException e1) {
 				l.warn("InterruptedException occurred when waiting for result.");
@@ -205,11 +207,36 @@ public class SystemEngine implements Engine {
 		Intent recognizerIntent = new Intent();
 		mSpeechRecognizer.setRecognitionListener(listener);
 		mSpeechRecognizer.startListening(recognizerIntent);
+        if(timeout > 0) synchronized (result) {
+            try {
+                result.wait(timeout);
+            } catch (InterruptedException e1) {
+                l.warn("result timeout wait error:" + e1);
+            }
+        }
+        mSpeechRecognizer.stopListening();
+
+        synchronized (result) {
+            if(!listener.isDictateFinished()) {
+                try {
+                    result.wait();
+                } catch (InterruptedException e1) {
+                    l.warn("result wait dictate error:" + e1);
+                }
+            }
+        }
+
 		return result;
 	}
 
 	private static final class RecognizerListener implements RecognitionListener {
 		private DictationResult target = null;
+
+        private boolean mDictateFinished = false;
+
+        public boolean isDictateFinished() {
+            return mDictateFinished;
+        }
 
 		public RecognizerListener(DictationResult result) {
 			this.target = result;
@@ -217,56 +244,75 @@ public class SystemEngine implements Engine {
 
 		@Override
 		public void onReadyForSpeech(Bundle params) {
-			// TODO Auto-generated method stub
-
+            l.debug("onReadyForSpeech params:" + params);
 		}
 
 		@Override
 		public void onBeginningOfSpeech() {
-			// TODO Auto-generated method stub
-
+			l.debug("onBeginningOfSpeech");
 		}
 
 		@Override
 		public void onRmsChanged(float rmsdB) {
-			// TODO Auto-generated method stub
-
+			l.debug("onRmsChanged rmsdB =" + rmsdB);
 		}
 
 		@Override
 		public void onBufferReceived(byte[] buffer) {
-			// TODO Auto-generated method stub
-
+			l.debug("onBufferReceived buffer:" + buffer);
 		}
 
 		@Override
 		public void onEndOfSpeech() {
-			// TODO Auto-generated method stub
-
+			l.debug("onEndOfSpeech");
 		}
 
 		@Override
 		public void onError(int error) {
-			// TODO Auto-generated method stub
+            l.debug("onError error = " + error);
+			switch (error) {
+                case SpeechRecognizer.ERROR_NETWORK:
+                case SpeechRecognizer.ERROR_NETWORK_TIMEOUT:
+                    target.result = EngineResult.NETWORK_ERROR;
+                    break;
+                default:
+                    target.result = EngineResult.FAILED;
+                    break;
+            }
 
+            // Notify that we finished the dictate.
+            synchronized (target) {
+                mDictateFinished = true;
+                target.notifyAll();
+            }
 		}
 
 		@Override
 		public void onResults(Bundle results) {
-			// TODO Auto-generated method stub
+            ArrayList<String> texts = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
+            float[] scores = results.getFloatArray(SpeechRecognizer.CONFIDENCE_SCORES);
+            for(int i = 0; i < texts.size(); i++) {
+                ResultText rt = new ResultText();
+                rt.setScore((int)(scores[i] * 100));
+                target.texts.add(rt);
+            }
+            target.result = EngineResult.OK;
 
+            // Notify that we finished the dictate.
+            synchronized (target) {
+                mDictateFinished = true;
+                target.notifyAll();
+            }
 		}
 
 		@Override
 		public void onPartialResults(Bundle partialResults) {
-			// TODO Auto-generated method stub
-
+			l.debug("onPartialResults results:" + partialResults);
 		}
 
 		@Override
 		public void onEvent(int eventType, Bundle params) {
-			// TODO Auto-generated method stub
-
+		    l.debug("onEvent evenType = " + eventType +", params:" + params);
 		}
 	}
 
@@ -302,6 +348,7 @@ public class SystemEngine implements Engine {
 			}
 			
 			synchronized(result) {
+                result.isSpeakFinish = true;
 				result.notifyAll();
 			}
 		}
@@ -322,6 +369,7 @@ public class SystemEngine implements Engine {
 			}
 			
 			synchronized(result) {
+                result.isSpeakFinish = true;
 				result.notifyAll();
 			}
 
