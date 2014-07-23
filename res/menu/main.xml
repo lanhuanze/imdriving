@@ -2,10 +2,33 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="com.irefire.android.imdriving.MainActivity" >
 
+    <item android:id="@+id/action_share"
+          android:title="@string/action_share"
+          android:showAsAction="ifRoom"
+          android:actionProviderClass="android.widget.ShareActionProvider" />
+
     <item
         android:id="@+id/action_settings"
         android:orderInCategory="100"
         android:showAsAction="never"
         android:title="@string/action_settings"/>
+
+    <item
+            android:id="@+id/action_filter_apps"
+            android:orderInCategory="100"
+            android:showAsAction="never"
+            android:title="@string/action_filter_apps"/>
+
+    <item
+            android:id="@+id/action_help_to_translate"
+            android:orderInCategory="100"
+            android:showAsAction="never"
+            android:title="@string/action_help_translate"/>
+
+    <item
+            android:id="@+id/action_subscribe"
+            android:orderInCategory="100"
+            android:showAsAction="never"
+            android:title="@string/action_subscribe"/>
 
 </menu>

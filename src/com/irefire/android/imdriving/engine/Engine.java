@@ -23,4 +23,6 @@ public interface Engine {
 	 * @return
 	 */
 	public DictationResult dictateText(Event e, long timeout);
+
+    public SpeakResult speak(String text);
 }

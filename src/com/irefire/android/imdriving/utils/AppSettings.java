@@ -5,10 +5,18 @@ import java.util.BitSet;
 import java.util.List;
 import java.util.Locale;
 
+import android.content.Context;
 import android.text.TextUtils;
+import android.view.inputmethod.InputMethodInfo;
+import android.view.inputmethod.InputMethodManager;
+import com.irefire.android.imdriving.App;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class AppSettings {
-	
+
+    private static final Logger l = LoggerFactory.getLogger(AppSettings.class.getSimpleName());
+
 	/**
 	 * Read the notification without 
 	 */
@@ -18,9 +26,11 @@ public class AppSettings {
 	private String ttsVoice = "Samantha";
 	
 	private Locale mLocale = Locale.US;
+
+    private boolean mServiceStarted = false;
 	
 	private BitSet changeSet = new BitSet();
-	
+	private Context mContext = null;
 	
 	
 	public static final AppSettings getInstance() {
@@ -28,8 +38,12 @@ public class AppSettings {
 	}
 	
 	private AppSettings() {
-		
-	}
+		mContext = App.getStaticContext();
+        mIgnorePackages.addAll(this.getInputMethodPackages());
+        // we don't read the notification from android system.
+        mIgnorePackages.add("android");
+        mIgnorePackages.add("com.android.providers.downloads");
+    }
 	
 	private static final class Holder {
 		public static final AppSettings _INST = new AppSettings();
@@ -126,4 +140,23 @@ public class AppSettings {
     }
 
     private List<String> mIgnorePackages = new ArrayList<String>();
+
+    private List<String> getInputMethodPackages() {
+        List<String> list = new ArrayList<String>();
+        InputMethodManager imm = (InputMethodManager)mContext.getSystemService(Context.INPUT_METHOD_SERVICE);
+        List<InputMethodInfo> imis = imm.getInputMethodList();
+        for(InputMethodInfo imi: imis) {
+            list.add(imi.getPackageName());
+            l.debug("InputMethod:" + imi.getPackageName());
+        }
+        return list;
+    }
+
+    public boolean getServiceStarted() {
+        return mServiceStarted;
+    }
+
+    public void setServiceStarted(boolean started) {
+        mServiceStarted = started;
+    }
 }

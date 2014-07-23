@@ -4,6 +4,7 @@ import java.util.*;
 
 import android.os.Handler;
 import com.irefire.android.imdriving.App;
+import com.irefire.android.imdriving.event.DummyEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,7 +29,12 @@ public class SystemEngine implements Engine {
 
 	private static final Logger l = LoggerFactory.getLogger(SystemEngine.class.getSimpleName());
 
-	public static boolean isSystemEngineSupported(Context c) {
+    @Override
+    public SpeakResult speak(String text) {
+        return speak(text, new DummyEvent(mContext));
+    }
+
+    public static boolean isSystemEngineSupported(Context c) {
 		assert c != null;
         l.debug("isRecognitionAvailable = " + SpeechRecognizer.isRecognitionAvailable(c));
 		PackageManager pm = c.getPackageManager();
@@ -263,7 +269,7 @@ public class SystemEngine implements Engine {
 
 		@Override
 		public void onRmsChanged(float rmsdB) {
-			l.debug("onRmsChanged rmsdB =" + rmsdB);
+			//l.debug("onRmsChanged rmsdB =" + rmsdB);
 		}
 
 		@Override

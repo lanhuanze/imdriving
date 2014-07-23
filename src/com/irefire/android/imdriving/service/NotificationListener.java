@@ -35,9 +35,10 @@ public class NotificationListener extends NotificationListenerService {
 
         if(mAppSettings.ignoreNotification(sbn.getPackageName())) {
             l.debug("We will ignore notification from " + sbn.getPackageName());
+            return;
         }
 
-		l.debug("new notification received:" + sbn.toString());
+		l.debug("new notification received:" + sbn.getPackageName());
 		NotificationProcessor.getInstance().enqueueEvent(sbn);
 	}
 
