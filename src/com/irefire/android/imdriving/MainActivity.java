@@ -1,5 +1,7 @@
 package com.irefire.android.imdriving;
 
+import android.app.*;
+import android.preference.PreferenceFragment;
 import android.view.*;
 import android.widget.Button;
 import android.widget.ShareActionProvider;
@@ -11,13 +13,7 @@ import com.irefire.android.imdriving.utils.AppSettings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import android.app.Activity;
-import android.app.AlertDialog;
 import android.app.AlertDialog.Builder;
-import android.app.Dialog;
-import android.app.Fragment;
-import android.app.Notification;
-import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -138,6 +134,11 @@ public class MainActivity extends Activity implements View.OnClickListener{
 		// as you specify a parent activity in AndroidManifest.xml.
 		int id = item.getItemId();
 		if (id == R.id.action_settings) {
+            FragmentTransaction transaction = this.getFragmentManager().beginTransaction();
+            Fragment settingsFragment = new AppSettingsFragment();
+            transaction.replace(R.id.container, settingsFragment);
+            transaction.addToBackStack(null);
+            transaction.commit();
 			return true;
 		}else if(id == R.id.action_filter_apps) {
             return true;
@@ -168,7 +169,27 @@ public class MainActivity extends Activity implements View.OnClickListener{
             rootView.findViewById(R.id.button_start_stop).setOnClickListener(mListener);
 			return rootView;
 		}
-	}
+
+        @Override
+        public void onResume() {
+            super.onResume();
+            this.getActivity().getActionBar().setTitle(R.string.app_name);
+        }
+    }
+
+    public static class AppSettingsFragment extends PreferenceFragment {
+        @Override
+        public void onCreate(Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+            this.addPreferencesFromResource(R.xml.app_settings);
+        }
+
+        @Override
+        public void onResume() {
+            super.onResume();
+            this.getActivity().getActionBar().setTitle(R.string.app_settings);
+        }
+    }
 
 	@Override
 	protected void onResume() {

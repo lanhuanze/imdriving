@@ -27,4 +27,15 @@
         <item>SHUTUP</item>
         <item>SLEEP</item>
     </string-array>
+
+    <string-array name="supported_languages" translate="false">
+        <item>English (US)</item>
+        <item>English (Australia)</item>
+        <item>English (Canada)</item>
+    </string-array>
+    <string-array name="supported_languages_value" translate="false">
+        <item>en_US</item>
+        <item>en_AU</item>
+        <item>en_CA</item>
+    </string-array>
 </resources>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <SwitchPreference android:id="@+id/app_settings_auto_read_state"
+            android:defaultValue="false"
+            android:summaryOff="@string/settings_auto_read_summary_off"
+            android:summaryOn="@string/settings_auto_read_summary_on"
+            android:switchTextOn="@string/setting_auto_read_switch_on"
+            android:switchTextOff="@string/setting_auto_read_switch_off"/>
+    <ListPreference android:id="@+id/app_settings_language"
+            android:entries="@array/supported_languages"
+            android:entryValues="@array/supported_languages_value"/>
+</PreferenceScreen>
