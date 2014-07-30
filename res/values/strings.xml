@@ -7,7 +7,7 @@
     <string name="action_share">Share</string>
     <string name="start_driving">Start driving</string>
     <string name="stop_driving">Stop driving</string>
-    <string name="action_filter_apps">Filter apps</string>
+
     <string name="action_help_translate">Help to translate</string>
     <string name="action_subscribe">Subscribe</string>
     <string name="share_content">Dear, this app keep you driving more safe, please try it at http://play.google.com</string>
@@ -38,8 +38,12 @@
     <string name="speak_too_many_trials">Sorry, too many failed trials, bye bye.</string>
 
 
-    <string name="settings_auto_read_summary_on">Automatically read new notifications.</string>
-    <string name="settings_auto_read_summary_off">I will ask you if read new notifications.</string>
+    <string name="settings_auto_read_summary">Automatically read new notifications.</string>
     <string name="setting_auto_read_switch_on">On</string>
     <string name="setting_auto_read_switch_off">Off</string>
+    <string name="setting_speech_dictate_language_summary">Language to speak and dictate.</string>
+    <string name="setting_speech_dictate_language">Choose language</string>
+    <string name="setting_general_settings">General Settings</string>
+    <string name="setting_filter_apps">Filter apps</string>
+    <string name="setting_choose_app_to_read">Choose notify apps</string>
 </resources>

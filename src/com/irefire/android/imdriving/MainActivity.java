@@ -134,15 +134,11 @@ public class MainActivity extends Activity implements View.OnClickListener{
 		// as you specify a parent activity in AndroidManifest.xml.
 		int id = item.getItemId();
 		if (id == R.id.action_settings) {
-            FragmentTransaction transaction = this.getFragmentManager().beginTransaction();
-            Fragment settingsFragment = new AppSettingsFragment();
-            transaction.replace(R.id.container, settingsFragment);
-            transaction.addToBackStack(null);
-            transaction.commit();
+            Intent intent = new Intent();
+            intent.setClass(this, SettingsActivity.class);
+            startActivity(intent);
 			return true;
-		}else if(id == R.id.action_filter_apps) {
-            return true;
-        }else if(id == R.id.action_help_to_translate) {
+		}else if(id == R.id.action_help_to_translate) {
             return true;
         }else if(id == R.id.action_subscribe) {
             return true;
