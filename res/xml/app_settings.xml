@@ -17,10 +17,4 @@
                     android:summary="English (US)"
                     android:key="app_settings_language"
                     android:entryValues="@array/supported_languages_value"/>
-
-    <MultiSelectListPreference android:title="@string/setting_choose_app_to_read"
-                               android:key="setting_choose_app_to_read"
-                               android:defaultValue="@array/empty_arrays"
-                               android:entryValues="@array/empty_arrays"
-                               android:entries="@array/empty_arrays"/>
 </PreferenceScreen>

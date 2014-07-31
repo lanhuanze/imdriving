@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:id="@+id/app_filter_item_id"
+              android:orientation="horizontal"
+              android:layout_gravity="center_vertical"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content">
+    <CheckBox android:layout_width="wrap_content" android:layout_height="match_parent" android:id="@+id/app_filter_checkbox"
+              android:focusable="false"
+              android:clickable="false"/>
+    <ImageView  android:id="@+id/app_filter_icon" android:layout_width="wrap_content"
+               android:layout_marginLeft="10sp"
+               android:focusable="false"
+               android:focusableInTouchMode="false"
+               android:layout_height="wrap_content"/>
+    <TextView android:id="@+id/app_filter_name" android:layout_width="wrap_content"
+              android:layout_marginLeft="10sp"
+              android:focusable="false"
+              android:focusableInTouchMode="false"
+              android:textAppearance="?android:attr/textAppearanceLarge"
+              android:layout_height="match_parent"/>
+</LinearLayout>
