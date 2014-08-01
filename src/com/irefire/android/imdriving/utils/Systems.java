@@ -3,7 +3,14 @@ package com.irefire.android.imdriving.utils;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.List;
 
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.content.pm.ServiceInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,4 +38,27 @@ public class Systems {
 		l.debug("getSystemPath returns " + builder.toString());
 		return builder.toString();
 	}
+
+    public boolean isMessageApp(String pkg, Context context) {
+        // we will check if an app is message app according to
+        // http://android-developers.blogspot.com/2013/10/getting-your-sms-apps-ready-for-kitkat.html
+        PackageManager pm = context.getPackageManager();
+        boolean hasHeadlessSmsSendService = false;
+        boolean hasSmsReceiver = false;
+        boolean hasMmsReceive = false;
+        boolean hasComposeSmsActivity = false;
+
+        Intent headlessSmsSendServiceIntent = new Intent();
+        headlessSmsSendServiceIntent.setAction("android.intent.action.RESPOND_VIA_MESSAGE");
+        headlessSmsSendServiceIntent.addCategory("android.intent.category.DEFAULT");
+        headlessSmsSendServiceIntent.
+
+
+        return true;
+    }
+
+    public static List<String> getMessagePackages() {
+
+        return null;
+    }
 }

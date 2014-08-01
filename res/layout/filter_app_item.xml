@@ -9,15 +9,16 @@
     <CheckBox android:layout_width="wrap_content" android:layout_height="match_parent" android:id="@+id/app_filter_checkbox"
               android:focusable="false"
               android:clickable="false"/>
-    <ImageView  android:id="@+id/app_filter_icon" android:layout_width="wrap_content"
-               android:layout_marginLeft="10sp"
+    <ImageView  android:id="@+id/app_filter_icon" android:layout_width="@dimen/icon_size"
+               android:layout_marginLeft="@dimen/padding_left"
                android:focusable="false"
                android:focusableInTouchMode="false"
-               android:layout_height="wrap_content"/>
+               android:layout_height="@dimen/icon_size"/>
     <TextView android:id="@+id/app_filter_name" android:layout_width="wrap_content"
-              android:layout_marginLeft="10sp"
+              android:layout_marginLeft="@dimen/padding_left"
               android:focusable="false"
               android:focusableInTouchMode="false"
               android:textAppearance="?android:attr/textAppearanceLarge"
+              android:gravity="center_vertical"
               android:layout_height="match_parent"/>
 </LinearLayout>

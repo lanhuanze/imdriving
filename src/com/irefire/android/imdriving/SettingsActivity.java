@@ -12,6 +12,7 @@ import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.TextUtils;
 import android.text.style.DrawableMarginSpan;
+import com.irefire.android.imdriving.utils.AppSettings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,15 +25,20 @@ import java.util.*;
 public class SettingsActivity extends PreferenceActivity {
     private static final Logger l = LoggerFactory.getLogger(SettingsActivity.class.getSimpleName());
 
+    private AppSettings mSettings = null;
+    private PreferenceFragment mFragment = null;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
 
+        mFragment = new FirstFragment(this);
         if (savedInstanceState == null) {
             getFragmentManager().beginTransaction()
-                    .add(android.R.id.content, new FirstFragment()).commit();
+                    .add(android.R.id.content, mFragment).commit();
         }
+        mSettings = AppSettings.getInstance();
     }
 
     @Override
@@ -42,7 +48,9 @@ public class SettingsActivity extends PreferenceActivity {
 
     private static class FirstFragment extends PreferenceFragment {
 
-        public FirstFragment() {
+        private SettingsActivity mHost;
+        public FirstFragment(SettingsActivity host) {
+            mHost = host;
         }
 
         @Override
@@ -52,5 +60,15 @@ public class SettingsActivity extends PreferenceActivity {
         }
     }
 
+    @Override
+    protected void onPause() {
+        super.onPause();
+        // refresh settings.
+        mSettings.loadSettings();
+    }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+    }
 }

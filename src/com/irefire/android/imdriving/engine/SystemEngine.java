@@ -3,8 +3,10 @@ package com.irefire.android.imdriving.engine;
 import java.util.*;
 
 import android.os.Handler;
+import android.speech.RecognizerIntent;
 import com.irefire.android.imdriving.App;
 import com.irefire.android.imdriving.event.DummyEvent;
+import com.irefire.android.imdriving.utils.AppSettings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,9 +27,12 @@ import android.speech.tts.UtteranceProgressListener;
 
 import com.irefire.android.imdriving.event.Event;
 
-public class SystemEngine implements Engine {
+public class SystemEngine implements Engine, AppSettings.SettingChangeListener {
 
 	private static final Logger l = LoggerFactory.getLogger(SystemEngine.class.getSimpleName());
+
+    private BitSet mCheckBitSet = new BitSet();
+    private AppSettings mSettings = null;
 
     @Override
     public SpeakResult speak(String text) {
@@ -80,12 +85,22 @@ public class SystemEngine implements Engine {
 		return Holder._INST;
 	}
 
+    @Override
+    public void onChange(AppSettings settings, BitSet set) {
+        if(set.intersects(mCheckBitSet)) {
+            mTextToSpeech.setLanguage(new Locale(mSettings.getTtsLanguage()));
+        }
+    }
+
     private static final class Holder {
         public static final SystemEngine _INST = new SystemEngine();
     }
 
     private SystemEngine() {
         init(App.getStaticContext());
+        mCheckBitSet.set(AppSettings.SettingItem.LANGUAGE.ordinal());
+        mSettings = AppSettings.getInstance();
+        mSettings.addListener(this);
     }
 
 	private boolean initialized = false;
@@ -202,7 +217,7 @@ public class SystemEngine implements Engine {
 		final RecognizerListener listener = new RecognizerListener(result);
 		assert initialized;
 		final Intent recognizerIntent = new Intent();
-
+        recognizerIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, mSettings.getTtsLanguage());
         // we must call this from main thread.
         mMainThreadHandler.post( new Runnable() {
             @Override

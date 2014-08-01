@@ -35,8 +35,9 @@
             </intent-filter>
         </activity>
         <activity android:name="com.irefire.android.imdriving.SettingsActivity"
+
                 android:label="@string/app_settings"/>
-        <activity android:name="com.irefire.android.imdriving.FilterAppActivity" android:label="@string/action_filter_app"/>
+        <activity android:name="com.irefire.android.imdriving.FilterAppActivity" android:label="@string/choose_app_to_read"/>
 
         <service
             android:name="com.irefire.android.imdriving.service.NotificationListener"

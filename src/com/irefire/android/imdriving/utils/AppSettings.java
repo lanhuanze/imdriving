@@ -1,11 +1,14 @@
 package com.irefire.android.imdriving.utils;
 
-import java.util.ArrayList;
-import java.util.BitSet;
-import java.util.List;
-import java.util.Locale;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.*;
 
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import android.text.TextUtils;
 import android.view.inputmethod.InputMethodInfo;
 import android.view.inputmethod.InputMethodManager;
@@ -39,15 +42,25 @@ public class AppSettings {
 	
 	private AppSettings() {
 		mContext = App.getStaticContext();
-        mIgnorePackages.addAll(this.getInputMethodPackages());
-        // we don't read the notification from android system.
-        mIgnorePackages.add("android");
-        mIgnorePackages.add("com.android.providers.downloads");
+
+        setAllowedPackages(getAllowedPackages());
+        removeAnnoyPackages();
+
+        loadSettings();
     }
 	
 	private static final class Holder {
 		public static final AppSettings _INST = new AppSettings();
 	}
+
+    public void loadSettings() {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mContext);
+
+        this.autoRead = prefs.getBoolean("app_settings_auto_read_state", false);
+        this.ttsLanguage = prefs.getString("app_settings_language", "en_US");
+        l.debug("Language:" + ttsLanguage);
+        l.debug("AutoRead:" + autoRead);
+    }
 
 	public boolean isAutoRead() {
 		return autoRead;
@@ -129,28 +142,80 @@ public class AppSettings {
 		LANGUAGE, VOICE, AUTO_READ;
 	}
 
-    /**
-     * check if ignore the notification from this package.
-     * Such as InputMethod, DownloadManager etc.
-     * @param packageName
-     * @return
-     */
-    public boolean ignoreNotification(String packageName) {
-        return mIgnorePackages.contains(packageName);
+    public boolean allowedReadNotification(String packageName) {
+        return mAllowedPackages.contains(packageName);
     }
 
-    private List<String> mIgnorePackages = new ArrayList<String>();
-
-    private List<String> getInputMethodPackages() {
-        List<String> list = new ArrayList<String>();
-        InputMethodManager imm = (InputMethodManager)mContext.getSystemService(Context.INPUT_METHOD_SERVICE);
-        List<InputMethodInfo> imis = imm.getInputMethodList();
-        for(InputMethodInfo imi: imis) {
-            list.add(imi.getPackageName());
-            l.debug("InputMethod:" + imi.getPackageName());
+    public boolean updateAllowedPackages(Map<String, Boolean> maps) {
+        if(maps == null || maps.size() <= 0) {
+            return false;
         }
-        return list;
+        synchronized (mAllowedPackages) {
+            mAllowedPackages.clear();
+            for(String p: maps.keySet()) {
+                if(Boolean.valueOf(maps.get(p) ==  null ? "false":"true")) {
+                    mAllowedPackages.add(p);
+                }
+            }
+        }
+        return true;
     }
+
+    public boolean setAllowedPackages(List<String> pkgs) {
+        synchronized (mAllowedPackages) {
+            mAllowedPackages.clear();
+            mAllowedPackages.addAll(pkgs);
+        }
+        return true;
+    }
+
+    public List<String> getAllowedPackages() {
+        try {
+            InputStream in = mContext.openFileInput(Constants.READ_APP_SAVED_FILE_NAME);
+            byte[] data = new byte[in.available()];
+            in.read(data);
+            String content = new String(data);
+            String[] pkgs = content.split(";");
+            return Arrays.asList(pkgs);
+        }  catch (FileNotFoundException e) {
+            l.warn("Error when read read app:" + e.getMessage());
+        }catch(IOException e) {
+            l.warn("Error when read read app:" + e.getMessage());
+        }
+       return  Collections.emptyList();
+    }
+
+    public boolean saveReadApps(Map<String, Boolean> maps) {
+        StringBuilder builder = new StringBuilder(2048);
+        for(String pkg: maps.keySet()) {
+            if(maps.get(pkg)) {
+                builder.append(pkg);
+                builder.append(";");
+            }
+        }
+        boolean result = true;
+        try {
+            OutputStream out = mContext.openFileOutput(Constants.READ_APP_SAVED_FILE_NAME, Context.MODE_PRIVATE);
+            out.write(builder.toString().getBytes());
+            out.flush();
+            out.close();
+        } catch (FileNotFoundException e) {
+            l.warn("Error when save read app:" + e.getMessage());
+            result = false;
+        }catch(IOException e) {
+            l.warn("Error when save read app:" + e.getMessage());
+            result = false;
+        }
+        return result;
+    }
+
+    private void removeAnnoyPackages() {
+        synchronized (mAllowedPackages) {
+            mAllowedPackages.remove("");
+        }
+    }
+
+    private List<String> mAllowedPackages = new ArrayList<String>();
 
     public boolean getServiceStarted() {
         return mServiceStarted;

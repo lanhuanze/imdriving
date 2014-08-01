@@ -18,35 +18,61 @@ public class NotificationUtils {
 	public static final String getTitle(Notification n) {
 		String title = "";
 		Bundle b = null;
+        CharSequence csTitle = null;
 		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR2) {
 			b = getBundle(n);
 			if(b != null) {
-				title = b.getCharSequence("android.title").toString();
+				csTitle = b.getCharSequence("android.title");
+                if(csTitle == null) {
+                    csTitle = b.getCharSequence("android.infoText");
+                }
 			}
 		}else {
 			b = n.extras;
 			if(b != null) {
-				title = b.getCharSequence(Notification.EXTRA_TITLE).toString();
+				csTitle = b.getCharSequence(Notification.EXTRA_TITLE);
+                if(csTitle == null) {
+                    csTitle = b.getCharSequence(Notification.EXTRA_INFO_TEXT);
+                }
 			}
 		}
+
+        if(csTitle != null) {
+            title = csTitle.toString();
+        }else {
+            title = "";
+        }
+
 		return title;
 	}
 
 	@SuppressLint("NewApi")
 	public static final String getContent(Notification n) {
 		String content = "";
+        CharSequence csContent = null;
 		Bundle b = null;
 		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR2) {
 			b = getBundle(n);
 			if(b != null) {
-				content = b.getCharSequence("android.text").toString();
+                csContent = b.getCharSequence("android.text");
+                if(csContent == null) {
+                    csContent = b.getCharSequence("android.summaryText");
+                }
 			}
 		}else {
 			b = n.extras;
 			if(b != null) {
-				content = b.getCharSequence(Notification.EXTRA_TEXT).toString();
+				csContent = b.getCharSequence(Notification.EXTRA_TEXT).toString();
+                if(csContent == null) {
+                    csContent = b.getCharSequence(Notification.EXTRA_SUMMARY_TEXT);
+                }
 			}
 		}
+        if(csContent != null) {
+            content = csContent.toString();
+        }else {
+            content = "";
+        }
 		return content;
 	}
 

@@ -15,6 +15,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.*;
+import com.irefire.android.imdriving.utils.AppSettings;
 import com.irefire.android.imdriving.utils.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,6 +34,7 @@ public class FilterAppActivity extends ListActivity implements View.OnClickListe
     private List<AppItem> mAppItems = null;
     private Map<String, Boolean> mReadAppMap = null;
     private Map<String, Boolean> mSelectedMap = null;
+    private AppSettings mSettings = null;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -41,8 +43,9 @@ public class FilterAppActivity extends ListActivity implements View.OnClickListe
         Set<AppItem> apps = this.getAllApps();
         mAppItems = new ArrayList<AppItem>(apps);
         mReadAppMap = new HashMap<String, Boolean>();
+        mSettings = AppSettings.getInstance();
 
-        List<String> saved = this.getReadApps();
+        List<String> saved = mSettings.getAllowedPackages();
         for(String p: saved) {
             mReadAppMap.put(p, Boolean.TRUE);
         }
@@ -55,6 +58,7 @@ public class FilterAppActivity extends ListActivity implements View.OnClickListe
         findViewById(R.id.app_filter_select_all_checkbox).setOnClickListener(this);
         findViewById(R.id.app_filter_save).setOnClickListener(this);
         findViewById(R.id.app_filter_cancel).setOnClickListener(this);
+
     }
 
     @Override
@@ -105,50 +109,12 @@ public class FilterAppActivity extends ListActivity implements View.OnClickListe
         }else if(id == R.id.app_filter_cancel) {
             finish();
         }else if(id == R.id.app_filter_save) {
-            this.saveReadApps(mSelectedMap);
+            mSettings.saveReadApps(mSelectedMap);
+            mSettings.updateAllowedPackages(mSelectedMap);
             finish();
         }
     }
 
-    private List<String> getReadApps() {
-        try {
-            InputStream in = this.openFileInput(Constants.READ_APP_SAVED_FILE_NAME);
-            byte[] data = new byte[in.available()];
-            in.read(data);
-            String content = new String(data);
-            String[] pkgs = content.split(";");
-            return Arrays.asList(pkgs);
-        }  catch (FileNotFoundException e) {
-            l.warn("Error when read read app:" + e.getMessage());
-        }catch(IOException e) {
-            l.warn("Error when read read app:" + e.getMessage());
-        }
-        return Collections.emptyList();
-    }
-
-    private boolean saveReadApps(Map<String, Boolean> maps) {
-        StringBuilder builder = new StringBuilder(2048);
-        for(String pkg: maps.keySet()) {
-            if(maps.get(pkg)) {
-                builder.append(pkg);
-                builder.append(";");
-            }
-        }
-        boolean result = true;
-        try {
-            OutputStream out = this.openFileOutput(Constants.READ_APP_SAVED_FILE_NAME, Context.MODE_PRIVATE);
-            out.write(builder.toString().getBytes());
-            out.flush();
-            out.close();
-        } catch (FileNotFoundException e) {
-            l.warn("Error when save read app:" + e.getMessage());
-            result = false;
-        }catch(IOException e) {
-            l.warn("Error when save read app:" + e.getMessage());
-            result = false;
-        }
-        return result;
-    }
 
     private static final class AppItem implements Comparable<AppItem>{
         public CharSequence pkg;

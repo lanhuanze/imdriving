@@ -10,7 +10,7 @@
                       android:summaryOn="@string/settings_auto_read_summary"
                       android:switchTextOn="@string/setting_auto_read_switch_on"
                       android:switchTextOff="@string/setting_auto_read_switch_off"/>
-    <ListPreference android:id="@+id/app_settings_language"
+    <com.irefire.android.imdriving.SummaryUpdateListPreference android:id="@+id/app_settings_language"
                     android:entries="@array/supported_languages"
                     android:defaultValue="en_US"
                     android:title="@string/setting_speech_dictate_language"
