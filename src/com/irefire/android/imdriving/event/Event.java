@@ -1,5 +1,6 @@
 package com.irefire.android.imdriving.event;
 
+import android.telephony.SmsMessage;
 import com.irefire.android.imdriving.R;
 import com.irefire.android.imdriving.engine.*;
 import org.slf4j.Logger;
@@ -291,6 +292,11 @@ public abstract class Event {
         event.setContent(content);
 		return event;
 	}
+
+    public static final Event createEvent(SmsMessage sms) {
+        Context c = App.getStaticContext();
+        return new SmsEvent(c);
+    }
 	
 	private static final Logger l = LoggerFactory.getLogger(Event.class.getSimpleName());
 

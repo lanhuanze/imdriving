@@ -19,7 +19,7 @@ public class NotificationUtils {
 		String title = "";
 		Bundle b = null;
         CharSequence csTitle = null;
-		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR2) {
+		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
 			b = getBundle(n);
 			if(b != null) {
 				csTitle = b.getCharSequence("android.title");
@@ -51,7 +51,7 @@ public class NotificationUtils {
 		String content = "";
         CharSequence csContent = null;
 		Bundle b = null;
-		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR2) {
+		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
 			b = getBundle(n);
 			if(b != null) {
                 csContent = b.getCharSequence("android.text");
