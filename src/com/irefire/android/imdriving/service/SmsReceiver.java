@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.telephony.SmsMessage;
 import android.text.TextUtils;
+import com.irefire.android.imdriving.event.EventSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -73,7 +74,7 @@ public class SmsReceiver extends BroadcastReceiver {
             SmsMessage[] messages = getMessagesFromIntent(intent);
             for(SmsMessage sms: messages) {
                 l.debug("enqueueEvent sms:" + sms);
-                np.enqueueEvent(sms);
+                np.enqueueEventSource(new EventSource(sms));
             }
         }
     }

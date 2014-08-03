@@ -31,8 +31,9 @@
 	<string name="new_notification_ask_if_read">Say yes to read or say no to ignore.</string>
     <string name="new_notification_ask_if_read_again">Sorry, I can here clearly, could you speak again. Say yes to read or say no to ignore</string>
 
-	<string name="new_short_message_auto_read">New short message</string>
-	<string name="new_short_message_none_auto_read">New short message, say yes to read, or no to ignore.</string>
+    <string name="new_sms_from_and_content">The short message is from %1$s and the content is %2$s</string>
+    <string name="new_sms_tip">You got new short message from %1$s</string>
+    <string name="new_sms_ask_if_reply">Do you want to reply, say yes to reply or say no to ignore.</string>
 
 
     <string name="speak_about_aborting">I am about aborting since hearing the command %1$s</string>

@@ -1,8 +1,10 @@
 package com.irefire.android.imdriving.event;
 
 import android.telephony.SmsMessage;
+import android.text.TextUtils;
 import com.irefire.android.imdriving.R;
 import com.irefire.android.imdriving.engine.*;
+import com.irefire.android.imdriving.utils.ContactsManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,6 +17,7 @@ import com.irefire.android.imdriving.service.ResourceManager;
 import com.irefire.android.imdriving.utils.AppSettings;
 import com.irefire.android.imdriving.utils.Constants;
 import com.irefire.android.imdriving.utils.NotificationUtils;
+import org.w3c.dom.Text;
 
 import java.util.Collections;
 
@@ -29,6 +32,7 @@ public abstract class Event {
 
 
 	private NextAction nextAction = NextAction.SPEAK_ARRIVING_TIP;
+    private NextAction currentAction = NextAction.ACTION_DONE;
 
 	protected Context mContext = null;
 
@@ -231,6 +235,7 @@ public abstract class Event {
 
 	protected final void setNextAction(NextAction nextAction) {
 		l.debug("NextAction: " + this.nextAction +" -----> " + nextAction);
+        currentAction = this.nextAction;
 		this.nextAction = nextAction;
 	}
 
@@ -255,6 +260,10 @@ public abstract class Event {
             }
         }
 	}
+
+    public void dictateIfReply() {};
+
+    public void dictateIfSent() {};
 
 	/**
 	 * 获得要回复的内容，一般为短信和电话回复的功能才有。
@@ -295,7 +304,28 @@ public abstract class Event {
 
     public static final Event createEvent(SmsMessage sms) {
         Context c = App.getStaticContext();
-        return new SmsEvent(c);
+        ContactsManager cm = ContactsManager.getInstance();
+        ResourceManager rm = ResourceManager.getInstance();
+        SmsEvent event = new SmsEvent(c);
+        String phoneNumber = sms.getOriginatingAddress();
+        if(TextUtils.isEmpty(phoneNumber)) {
+            phoneNumber = sms.getDisplayOriginatingAddress();
+        }
+        String name = cm.getName(phoneNumber);
+
+        // 找不到联系人，则直接用电话号码
+        if(TextUtils.isEmpty(name)) {
+            name = phoneNumber;
+        }
+
+        String content = sms.getMessageBody();
+        if(TextUtils.isEmpty(content)) {
+            content = sms.getDisplayMessageBody();
+        }
+
+        event.setTips(rm.getString(R.string.new_sms_tip, name));
+        event.setContent(rm.getString(R.string.new_sms_from_and_content, name, content));
+        return event;
     }
 	
 	private static final Logger l = LoggerFactory.getLogger(Event.class.getSimpleName());
@@ -323,6 +353,10 @@ public abstract class Event {
 		ASK_IF_READ_NOTIFICATION_AGAIN,
 		/** 听取是否读消息或是接听电话 */
 		ACTION_DICTATE_IF_READ_NOTIFICATION,
+        /** 听取是否回复消息*/
+        ACTION_DICTATE_IF_REPLY,
+        /** 听取是否发送回复的内容 */
+        ACTION_DICTATE_IF_SENT,
 		/** 用户选择读取消息或是接听电话 */
 		ACTION_POSITIVE,
 		/** 用户选择不读消息或不接听电话 */

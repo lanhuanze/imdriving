@@ -140,6 +140,14 @@ public final class NotificationProcessor {
                                 case ACTION_NEGATIVE:
                                     e.negativeAction();
                                     break;
+                                /** 听取是否回复消息*/
+                                case ACTION_DICTATE_IF_REPLY:
+                                    e.dictateIfReply();
+                                    break;
+                                /** 听取是否发送回复的内容 */
+                                case ACTION_DICTATE_IF_SENT:
+                                    e.dictateIfSent();
+                                    break;
                                 /** 询问用户是否回复信息，（电话只有拒接了才询问，短信只有读了才回复) */
                                 case SPEAK_ASK_IF_REPLY:
                                     e.speakAskIfReply();
