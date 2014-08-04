@@ -40,8 +40,9 @@ public class NotificationEvent extends Event {
 	}
 	
 	@Override
-	public void dictateContent() {
+	public boolean dictateContent() {
 		l.error("This method should not invoked in this class.");
+        return false;
 	}
 
 	@Override

@@ -160,10 +160,6 @@ public final class NotificationProcessor {
                                 case SPEAK_DICTATE_REPLY_CONTENT_START:
                                     e.speakDictateReplyContentStart();
                                     break;
-                                /** 提示用户没有听到任何内容，然后询问是否重说一遍 */
-                                case SPEAK_DICTATE_REPLY_CONTENT_FAILED:
-                                    e.speakDictateReplyContentFailed();
-                                    break;
                                 /** 提示用户上次听取失败，重新开始听用户的回复的内容 */
                                 case SPEAK_DICTATE_REPLY_CONTENT_START_AGAIN:
                                     e.speakDictateReplyContentStartAgain();
@@ -181,8 +177,8 @@ public final class NotificationProcessor {
                                     e.speakAskIfSentReplyAgain();
                                     break;
                                 /** 开始回复 */
-                                case ACTION_REPLY:
-                                    e.reply();
+                                case ACTION_SEND_REPLY:
+                                    e.sendReply();
                                     break;
                                 /** 发送成功 */
                                 case SPEAK_REPLY_OK:
@@ -193,7 +189,7 @@ public final class NotificationProcessor {
                                     e.speakReplyFailed();
                                     break;
                                 /** 程序即将退出 */
-                                case SPEAK_ABOAT_ABORTING:
+                                case SPEAK_ABOUT_ABORTING:
                                     e.speakAboutAborting();
                                     break;
                                 /** 失败次数太多 */

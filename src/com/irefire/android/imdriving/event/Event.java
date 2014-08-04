@@ -121,6 +121,8 @@ public abstract class Event {
 	 * @return
 	 */
 	public boolean dictateIfReadMessage() {
+        return dictateYesOrNo(NextAction.ACTION_POSITIVE, NextAction.ACTION_NEGATIVE, NextAction.ASK_IF_READ_NOTIFICATION_AGAIN);
+        /**
 		this.status = EventStatus.LISTENING;
 		DictationResult result = mEngine.dictateText(this,
 				Constants.LISTEN_YES_NO_TIME_OUT);
@@ -167,8 +169,58 @@ public abstract class Event {
 			return false;
 		}
 		trialTimes = 0;
-		return true;
+		return true;*/
 	}
+
+    protected boolean dictateYesOrNo(NextAction positiveAction, NextAction negativeAction, NextAction againAction) {
+        this.status = EventStatus.LISTENING;
+        DictationResult result = mEngine.dictateText(this,
+                Constants.LISTEN_YES_NO_TIME_OUT);
+
+        if (result.result != EngineResult.OK) {
+            this.setNextAction(againAction);
+            trialTimes ++;
+            if(trialTimes >= MAX_RETRIAL_TIMES) {
+                this.setNextAction(NextAction.SPEAK_TOO_MANY_FAILED_TRIALS);
+                trialTimes = 0;
+            }
+            return false;
+        }
+        String text = null;
+        boolean matchCommand = false;
+        for (ResultText t : result.texts) {
+            text = t.getText().toUpperCase(mAppSettings.getLocale());
+            if (mResourceManager.wordPositive(text)) {
+                this.setNextAction(positiveAction);
+                matchCommand = true;
+                break;
+            }
+            if (mResourceManager.wordNegative(text)) {
+                this.setNextAction(negativeAction);
+                matchCommand = true;
+                break;
+            }
+
+            if (mResourceManager.wordStop(text)) {
+                this.setNextAction(NextAction.SPEAK_ABOUT_ABORTING);
+                abortingCommand = text;
+                matchCommand = true;
+                break;
+            }
+        }
+
+        if(!matchCommand) {
+            this.setNextAction(againAction);
+            trialTimes ++;
+            if(trialTimes >= MAX_RETRIAL_TIMES) {
+                this.setNextAction(NextAction.SPEAK_TOO_MANY_FAILED_TRIALS);
+                trialTimes = 0;
+            }
+            return false;
+        }
+        trialTimes = 0;
+        return true;
+    }
 
 	/**
 	 * 询问是否回复该消息，只是短信或电话挂断的时候调用。
@@ -254,21 +306,21 @@ public abstract class Event {
                 this.setNextAction(NextAction.ACTION_POSITIVE);
             }else if(mResourceManager.wordStop(text)) {
                 abortingCommand = text;
-                this.setNextAction(NextAction.SPEAK_ABOAT_ABORTING);
+                this.setNextAction(NextAction.SPEAK_ABOUT_ABORTING);
             }else {
                 this.setNextAction(NextAction.ASK_IF_READ_NOTIFICATION_AGAIN);
             }
         }
 	}
 
-    public void dictateIfReply() {};
+    public boolean dictateIfReply() {return false;};
 
-    public void dictateIfSent() {};
+    public boolean dictateIfSent() {return false;};
 
 	/**
 	 * 获得要回复的内容，一般为短信和电话回复的功能才有。
 	 */
-	public abstract void dictateContent();
+	public abstract boolean dictateContent();
 
 	/**
 	 * If app set auto read the notification, we have to farther check this one.
@@ -363,12 +415,14 @@ public abstract class Event {
 		ACTION_NEGATIVE,
 		/** 询问用户是否回复信息，（电话只有拒接了才询问，短信只有读了才回复) */
 		SPEAK_ASK_IF_REPLY,
+        /**提示用户重新说一遍是否回复*/
+        SPEAK_ASK_IF_REPLY_AGAIN,
+        /** 用户选择发送回复 */
+        ACTION_SEND_REPLY,
 		/** 告诉用户无法回复，比如我们的程序没有设置为默认的短信程序 */
 		SPEAK_UNABLE_TO_REPLY,
 		/** 提示用户开始听用户的回复的内容 */
 		SPEAK_DICTATE_REPLY_CONTENT_START,
-		/** 提示用户没有听到任何内容，然后询问是否重说一遍 */
-		SPEAK_DICTATE_REPLY_CONTENT_FAILED,
 		/** 提示用户上次听取失败，重新开始听用户的回复的内容 */
 		SPEAK_DICTATE_REPLY_CONTENT_START_AGAIN,
 		/** 重复一遍用户输入的内容 */
@@ -377,14 +431,12 @@ public abstract class Event {
 		ASK_IF_SENT_REPLY,
 		/** 上次听取失败，再次询问用户是否确定回复 */
 		ASK_IF_SENT_REPLY_AGAIN,
-		/** 开始回复 */
-		ACTION_REPLY,
 		/** 发送成功 */
 		SPEAK_REPLY_OK,
 		/** 发送失败 */
 		SPEAK_REPLY_FAILED,
 		/** 程序即将退出 */
-		SPEAK_ABOAT_ABORTING,
+		SPEAK_ABOUT_ABORTING,
 		/** 失败次数太多 */
 		SPEAK_TOO_MANY_FAILED_TRIALS,
 		/** 操作完成 */
@@ -394,73 +446,75 @@ public abstract class Event {
 	/**
 	 * 每个听取失败后重试的次数.
 	 */
-	protected static final int MAX_RETIAL_TIMES = 3;
+	protected static final int MAX_RETRIAL_TIMES = 3;
 
 	public boolean speakUnableToReply() {
 		// TODO Auto-generated method stub
 		return true;
 	}
 
-	public void speakDictateReplyContentStart() {
+	public boolean speakDictateReplyContentStart() {
 		// TODO Auto-generated method stub
-		
+		return true;
 	}
 
-	public void speakDictateReplyContentFailed() {
+	public boolean speakDictateReplyContentFailed() {
 		// TODO Auto-generated method stub
-		
+		return true;
 	}
 
-	public void speakDictateReplyContentStartAgain() {
+	public boolean speakDictateReplyContentStartAgain() {
 		// TODO Auto-generated method stub
-		
+		return true;
 	}
 
-	public void speakRepeatReplyContent() {
+	public boolean speakRepeatReplyContent() {
 		// TODO Auto-generated method stub
-		
+		return true;
 	}
 
-	public void speakAskIfSentReply() {
+	public boolean speakAskIfSentReply() {
 		// TODO Auto-generated method stub
-		
+		return false;
 	}
 
-	public void speakAskIfSentReplyAgain() {
+	public boolean speakAskIfSentReplyAgain() {
 		// TODO Auto-generated method stub
-		
+		return false;
 	}
 
-	public void reply() {
+	public boolean sendReply() {
 		// TODO Auto-generated method stub
-		
+		return false;
 	}
 
-	public void speakReplyOk() {
+	public boolean speakReplyOk() {
 		// TODO Auto-generated method stub
-		
+		return true;
 	}
 
-	public void speakReplyFailed() {
+	public boolean speakReplyFailed() {
 		// TODO Auto-generated method stub
-		
+		return true;
 	}
 
-	public void speakAboutAborting() {
+	public boolean speakAboutAborting() {
 		String text = mResourceManager.getString(R.string.speak_about_aborting, abortingCommand);
         SpeakResult result = mEngine.speak(text, this);
         l.debug("speakAboutAborting text:" + text +" , returns:" + result);
 
         // TODO we should disable our app here.
         this.setNextAction(NextAction.ACTION_DONE);
+        return true;
 	}
 
-	public void speakTooManyFailedTrials() {
+	public boolean speakTooManyFailedTrials() {
         String text = mResourceManager.getString(R.string.speak_too_many_trials);
         SpeakResult result = mEngine.speak(text, this);
         l.debug("speakTooManyFailedTrials text:" + text +" , returns:" + result);
 
         // TODO we should disable our app here.
         this.setNextAction(NextAction.ACTION_DONE);
+        return true;
 	}
 }
