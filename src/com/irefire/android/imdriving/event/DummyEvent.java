@@ -6,34 +6,30 @@ import android.content.Context;
  * Created by lan on 7/23/14.
  */
 public class DummyEvent extends Event {
-    @Override
-    public boolean speakAskIfReadMessage() {
-        return false;
-    }
+
 
     public DummyEvent(Context c) {
         super(c);
     }
 
     @Override
-    public boolean speakAskIfReadMessageAgain() {
-
+    public boolean speakAskIfReadNotification() {
         return false;
     }
 
     @Override
-    public boolean speakAskIfReply() {
+    public boolean speakAskIfReadNotificationAgain() {
         return false;
     }
 
     @Override
-    public boolean speakStartDictateContent() {
+    public boolean actionReadNotification() {
         return false;
     }
 
     @Override
-    public void dictateContent() {
-
+    public boolean actionIgnoreNotification() {
+        return false;
     }
 
     @Override
@@ -41,13 +37,5 @@ public class DummyEvent extends Event {
         return false;
     }
 
-    @Override
-    public void positiveAction() {
 
-    }
-
-    @Override
-    public void negativeAction() {
-
-    }
 }

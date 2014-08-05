@@ -18,17 +18,19 @@ public class NotificationEvent extends Event {
 	}
 
 	@Override
-	public void positiveAction() {
+	public boolean actionReadNotification() {
 		String readText = mResourceManager.getString(R.string.new_notification_title_and_content, title, content);
 		SpeakResult result = mEngine.speak(readText, this);
 		l.debug("Speak:" + readText +", returns " + result);
 		this.setNextAction(NextAction.ACTION_DONE);
+        return true;
 	}
 
 	@Override
-	public void negativeAction() {
+	public boolean actionIgnoreNotification() {
 		l.debug("Negative action do nothing.");
 		this.setNextAction(NextAction.ACTION_DONE);
+        return true;
 	}
 
 	@Override
@@ -38,51 +40,17 @@ public class NotificationEvent extends Event {
 		 */
 		return true;
 	}
-	
-	@Override
-	public boolean dictateContent() {
-		l.error("This method should not invoked in this class.");
-        return false;
-	}
+
 
 	@Override
-	public boolean speakAskIfReadMessage() {
+	public boolean speakAskIfReadNotification() {
 		String askText = mResourceManager.getString(R.string.new_notification_ask_if_read);
-        SpeakResult result = mEngine.speak(askText, this);
-        l.debug("Speak:" + askText +", returns " + result);
-        if(result.result == EngineResult.OK) {
-
-            this.setNextAction(NextAction.ACTION_DICTATE_IF_READ_NOTIFICATION);
-        }else {
-            l.warn("Error speak:" + askText);
-            this.setNextAction(NextAction.ACTION_DONE);
-        }
-		return result.result == EngineResult.OK;
+        return speakAndGotoNextAction(askText, NextAction.ACTION_DICTATE_IF_READ_NOTIFICATION, NextAction.ACTION_DONE);
 	}
 
 	@Override
-	public boolean speakAskIfReply() {
-		l.error("This method should not invoked in this class");
-		return false;
-	}
-
-	@Override
-	public boolean speakStartDictateContent() {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean speakAskIfReadMessageAgain() {
+	public boolean speakAskIfReadNotificationAgain() {
         String askText = mResourceManager.getString(R.string.new_notification_ask_if_read_again);
-        SpeakResult result = mEngine.speak(askText, this);
-        l.debug("Speak:" + askText +", returns " + result);
-        if(result.result == EngineResult.OK) {
-            this.setNextAction(NextAction.ACTION_DICTATE_IF_READ_NOTIFICATION);
-        }else {
-            l.warn("Error speak:" + askText);
-            this.setNextAction(NextAction.ACTION_DONE);
-        }
-        return result.result == EngineResult.OK;
+        return speakAndGotoNextAction(askText, NextAction.ACTION_DICTATE_IF_READ_NOTIFICATION, NextAction.ACTION_DONE);
 	}
 }

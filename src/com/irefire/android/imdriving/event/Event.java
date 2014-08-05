@@ -90,9 +90,9 @@ public abstract class Event {
 		
 		if(result.result == EngineResult.OK) {
 			if(this.autoActionable() && mAppSettings.isAutoRead()) {
-				this.setNextAction(NextAction.ACTION_POSITIVE);
+				this.setNextAction(NextAction.ACTION_READ_NOTIFICATION);
 			}else {
-				this.setNextAction(NextAction.ASK_IF_READ_NOTIFICATION);
+				this.setNextAction(NextAction.SPEAK_ASK_IF_READ_NOTIFICATION);
 			}
 		}else {
 			this.setNextAction(NextAction.ACTION_DONE);
@@ -101,78 +101,113 @@ public abstract class Event {
 		return EngineResult.OK == result.result;
 	}
 
-	/**
-	 * 询问是否读消息。
-	 * 
-	 * @return
-	 */
-	public abstract boolean speakAskIfReadMessage();
-	
-	/**
-	 * 提示用户上次听取失败，是否需要再次听取答案。
-	 * 
-	 * @return
-	 */
-	public abstract boolean speakAskIfReadMessageAgain();
+	public abstract boolean speakAskIfReadNotification();
 
-	/**
-	 * 让用户再一次说是或否
-	 * 
-	 * @return
-	 */
-	public boolean dictateIfReadMessage() {
-        return dictateYesOrNo(NextAction.ACTION_POSITIVE, NextAction.ACTION_NEGATIVE, NextAction.ASK_IF_READ_NOTIFICATION_AGAIN);
-        /**
-		this.status = EventStatus.LISTENING;
-		DictationResult result = mEngine.dictateText(this,
-				Constants.LISTEN_YES_NO_TIME_OUT);
+	public abstract boolean speakAskIfReadNotificationAgain();
 
-		if (result.result != EngineResult.OK) {
-			this.setNextAction(NextAction.ASK_IF_READ_NOTIFICATION_AGAIN);
-			trialTimes ++;
-			if(trialTimes >= MAX_RETIAL_TIMES) {
-				this.setNextAction(NextAction.SPEAK_TOO_MANY_FAILED_TRIALS);
-				trialTimes = 0;
-			}
-			return false;
-		}
-		String text = null;
-		boolean matchCommand = false;
-		for (ResultText t : result.texts) {
-			text = t.getText().toUpperCase(mAppSettings.getLocale());
-			if (mResourceManager.wordPositive(text)) {
-				this.setNextAction(NextAction.ACTION_POSITIVE);
-				matchCommand = true;
-				break;
-			}
-			if (mResourceManager.wordNegative(text)) {
-				this.setNextAction(NextAction.ACTION_NEGATIVE);
-				matchCommand = true;
-				break;
-			}
-
-			if (mResourceManager.wordStop(text)) {
-				this.setNextAction(NextAction.SPEAK_ABOAT_ABORTING);
-                abortingCommand = text;
-				matchCommand = true;
-				break;
-			}
-		}
-		
-		if(!matchCommand) {
-			this.setNextAction(NextAction.ASK_IF_READ_NOTIFICATION_AGAIN);
-			trialTimes ++;
-			if(trialTimes >= MAX_RETIAL_TIMES) {
-				this.setNextAction(NextAction.SPEAK_TOO_MANY_FAILED_TRIALS);
-				trialTimes = 0;
-			}
-			return false;
-		}
-		trialTimes = 0;
-		return true;*/
+	public boolean actionDictateIfReadMessage() {
+        return dictateYesOrNo(NextAction.ACTION_READ_NOTIFICATION, NextAction.ACTION_IGNORE_NOTIFICATION, NextAction.SPEAK_ASK_IF_READ_NOTIFICATION_AGAIN);
 	}
 
-    protected boolean dictateYesOrNo(NextAction positiveAction, NextAction negativeAction, NextAction againAction) {
+    public abstract boolean actionReadNotification();
+
+    public abstract boolean actionIgnoreNotification();
+	public boolean speakAskIfReply(){throw new UnsupportedOperationException("Subclass should override it.");};
+
+    public boolean speakAskIfReplyAgain(){throw new UnsupportedOperationException("Subclass should override it.");};
+
+    public boolean actionDictateIfReply() {throw new UnsupportedOperationException("Subclass should override it.");};
+
+	public boolean speakDictateReplyContentStart(){throw new UnsupportedOperationException("Subclass should override it.");};
+    public boolean speakDictateReplyContentStartAgain(){throw new UnsupportedOperationException("Subclass should override it.");};
+
+    public boolean actionDictateReplyContent(){throw new UnsupportedOperationException("Subclass should override it.");}
+    public boolean speakRepeatReplyContent(){throw new UnsupportedOperationException("Subclass should override it.");}
+	public boolean speakAskIfSendReply() {
+        throw new UnsupportedOperationException("Subclass should override it.");
+	}
+    public boolean speakAskIfSendReplyAgain() {
+        throw new UnsupportedOperationException("Subclass should override it.");
+    }
+
+    public boolean actionDictateIfSendReply() {
+        throw new UnsupportedOperationException("Subclass should override it.");
+    }
+
+    public boolean actionSendReply() {
+        throw new UnsupportedOperationException("Subclass should override it.");
+    }
+    public boolean speakSendReplyOk() {
+        throw new UnsupportedOperationException("Subclass should override it.");
+    }
+
+    public boolean speakSendReplyFailed() {
+        throw new UnsupportedOperationException("Subclass should override it.");
+    }
+
+    public boolean speakAboutAborting() {
+        String text = mResourceManager.getString(R.string.speak_about_aborting, abortingCommand);
+        SpeakResult result = mEngine.speak(text, this);
+        l.debug("speakAboutAborting text:" + text +" , returns:" + result);
+
+        // TODO we should disable our app here.
+        this.setNextAction(NextAction.ACTION_DONE);
+        return true;
+    }
+
+    public boolean speakTooManyFailedTrials() {
+        String text = mResourceManager.getString(R.string.speak_too_many_trials);
+        SpeakResult result = mEngine.speak(text, this);
+        l.debug("speakTooManyFailedTrials text:" + text +" , returns:" + result);
+
+        // TODO we should disable our app here.
+        this.setNextAction(NextAction.ACTION_DONE);
+        return true;
+    }
+
+
+	public String getTips() {
+		return tips;
+	}
+
+	public void setTips(String tips) {
+		this.tips = tips;
+	}
+
+	public EventStatus getEventStatus() {
+		return status;
+	}
+
+	protected void setEventStatus(EventStatus status) {
+		this.status = status;
+	}
+
+	public NextAction getNextAction() {
+		return nextAction;
+	}
+
+	protected final void setNextAction(NextAction nextAction) {
+		l.debug("NextAction: " + this.nextAction +" -----> " + nextAction);
+        currentAction = this.nextAction;
+		this.nextAction = nextAction;
+	}
+
+	/**
+	 * If app set auto read the notification, we have to farther check this one.
+	 * 
+	 * @return
+	 */
+	public abstract boolean autoActionable();
+
+
+
+    /**
+     * 每个听取失败后重试的次数.
+     */
+    protected static final int MAX_RETRIAL_TIMES = 3;
+
+
+    protected final boolean dictateYesOrNo(NextAction positiveAction, NextAction negativeAction, NextAction againAction) {
         this.status = EventStatus.LISTENING;
         DictationResult result = mEngine.dictateText(this,
                 Constants.LISTEN_YES_NO_TIME_OUT);
@@ -222,122 +257,49 @@ public abstract class Event {
         return true;
     }
 
-	/**
-	 * 询问是否回复该消息，只是短信或电话挂断的时候调用。
-	 * 
-	 * @return
-	 */
-	public abstract boolean speakAskIfReply();
-	
-	
-	public abstract boolean speakStartDictateContent();
-	
-	/**
-	 * 识别要回复的内容。
-	 * @return
-	 */
-	public final boolean dictateReplyContent() {
-		
-		return true;
-	}
-	
+    protected final boolean speakAndGotoNextAction(String text, NextAction okAction, NextAction failedAction) {
+        SpeakResult result = mEngine.speak(text, this);
+        l.debug("Speak:" + text + ", returns " + result);
+        if (result.result == Engine.EngineResult.OK) {
+            this.setNextAction(okAction);
+        } else {
+            l.warn("Error speak:" + text);
+            this.setNextAction(failedAction);
+        }
+        return result.result == Engine.EngineResult.OK;
+    }
 
-	/**
-	 * 让用户确认输入的内容。
-	 * 
-	 * @return
-	 */
-	public final boolean speakAskConfirmTheContent() {
-		return true;
-	}
-	
+    protected final String dictateTextWithTimeout(long timeout, NextAction againAction) {
+        this.status = EventStatus.LISTENING;
+        DictationResult result = mEngine.dictateText(this,
+                timeout);
 
-	/**
-	 * 让用户确认是否回复
-	 * 
-	 * @return
-	 */
-	public final boolean speakAskConfirmReply() {
-		return true;
-	}
-
-	public final boolean speakAskRepeatContentAgain() {
-		return true;
-	}
-
-	public String getTips() {
-		return tips;
-	}
-
-	public void setTips(String tips) {
-		this.tips = tips;
-	}
-
-	public EventStatus getEventStatus() {
-		return status;
-	}
-
-	protected void setEventStatus(EventStatus status) {
-		this.status = status;
-	}
-
-	public NextAction getNextAction() {
-		return nextAction;
-	}
-
-	protected final void setNextAction(NextAction nextAction) {
-		l.debug("NextAction: " + this.nextAction +" -----> " + nextAction);
-        currentAction = this.nextAction;
-		this.nextAction = nextAction;
-	}
-
-	public void dictateYesOrNo() {
-		DictationResult result = mEngine.dictateText(this, Constants.LISTEN_YES_NO_TIME_OUT);
-        l.debug("dictateYesOrNo returns " + result);
-        if(result.result != EngineResult.OK || result.texts.isEmpty()) {
-            this.setNextAction(NextAction.ASK_IF_READ_NOTIFICATION);
-            return;
-        }else {
-            Collections.sort(result.texts);
-            String text = result.texts.get(0).getText();
-            if(mResourceManager.wordNegative(text)) {
-                this.setNextAction(NextAction.ACTION_NEGATIVE);
-            }else if(mResourceManager.wordPositive(text)) {
-                this.setNextAction(NextAction.ACTION_POSITIVE);
-            }else if(mResourceManager.wordStop(text)) {
-                abortingCommand = text;
-                this.setNextAction(NextAction.SPEAK_ABOUT_ABORTING);
-            }else {
-                this.setNextAction(NextAction.ASK_IF_READ_NOTIFICATION_AGAIN);
+        if (result.result != EngineResult.OK) {
+            this.setNextAction(againAction);
+            trialTimes ++;
+            if(trialTimes >= MAX_RETRIAL_TIMES) {
+                this.setNextAction(NextAction.SPEAK_TOO_MANY_FAILED_TRIALS);
+                trialTimes = 0;
+                return "";
             }
         }
-	}
-
-    public boolean dictateIfReply() {return false;};
-
-    public boolean dictateIfSent() {return false;};
-
-	/**
-	 * 获得要回复的内容，一般为短信和电话回复的功能才有。
-	 */
-	public abstract boolean dictateContent();
-
-	/**
-	 * If app set auto read the notification, we have to farther check this one.
-	 * 
-	 * @return
-	 */
-	public abstract boolean autoActionable();
-
-	/**
-	 * Action if the user say YES.
-	 */
-	public abstract void positiveAction();
-
-	/**
-	 * Action if the user say NO.
-	 */
-	public abstract void negativeAction();
+        boolean matchCommand = false;
+        if(result.texts.size() > 0) {
+            Collections.sort(result.texts);
+            matchCommand = true;
+            trialTimes = 0;
+            return result.texts.get(0).getText();
+        }
+        if(!matchCommand) {
+            this.setNextAction(againAction);
+            trialTimes ++;
+            if(trialTimes >= MAX_RETRIAL_TIMES) {
+                this.setNextAction(NextAction.SPEAK_TOO_MANY_FAILED_TRIALS);
+                trialTimes = 0;
+            }
+        }
+        return "";
+    }
 
 	public static final Event createEvent(StatusBarNotification sbn) {
         ResourceManager rm = ResourceManager.getInstance();
@@ -363,6 +325,9 @@ public abstract class Event {
         if(TextUtils.isEmpty(phoneNumber)) {
             phoneNumber = sms.getDisplayOriginatingAddress();
         }
+
+        event.setFromPhoneNumber(phoneNumber);
+
         String name = cm.getName(phoneNumber);
 
         // 找不到联系人，则直接用电话号码
@@ -400,121 +365,46 @@ public abstract class Event {
 		/** 播报新消息来到 */
 		SPEAK_ARRIVING_TIP,
 		/** 询问用户是否读新消息, 如果是来电，则问是否接听 */
-		ASK_IF_READ_NOTIFICATION,
+		SPEAK_ASK_IF_READ_NOTIFICATION,
 		/** 如果听取失败，则让用户再说一次*/
-		ASK_IF_READ_NOTIFICATION_AGAIN,
+		SPEAK_ASK_IF_READ_NOTIFICATION_AGAIN,
 		/** 听取是否读消息或是接听电话 */
 		ACTION_DICTATE_IF_READ_NOTIFICATION,
-        /** 听取是否回复消息*/
-        ACTION_DICTATE_IF_REPLY,
-        /** 听取是否发送回复的内容 */
-        ACTION_DICTATE_IF_SENT,
 		/** 用户选择读取消息或是接听电话 */
-		ACTION_POSITIVE,
+		ACTION_READ_NOTIFICATION,
 		/** 用户选择不读消息或不接听电话 */
-		ACTION_NEGATIVE,
+		ACTION_IGNORE_NOTIFICATION,
 		/** 询问用户是否回复信息，（电话只有拒接了才询问，短信只有读了才回复) */
 		SPEAK_ASK_IF_REPLY,
         /**提示用户重新说一遍是否回复*/
         SPEAK_ASK_IF_REPLY_AGAIN,
+        /** 听取是否回复消息*/
+        ACTION_DICTATE_IF_REPLY,
+        /** 提示用户开始听用户的回复的内容 */
+        SPEAK_DICTATE_REPLY_CONTENT_START,
+        /** 提示用户上次听取失败，重新开始听用户的回复的内容 */
+        SPEAK_DICTATE_REPLY_CONTENT_START_AGAIN,
+        /** 开始听取回复内容 */
+        ACTION_DICTATE_REPLY_CONTENT,
+        /** 重复一遍用户输入的内容 */
+        SPEAK_REPEAT_REPLY_CONTENT,
+        /** 询问用户是否确定回复 */
+        SPEAK_ASK_IF_SENT_REPLY,
+        /** 上次听取失败，再次询问用户是否确定回复 */
+        SPEAK_ASK_IF_SENT_REPLY_AGAIN,
+        /** 听取是否发送回复的内容 */
+        ACTION_DICTATE_IF_SENT_REPLY,
         /** 用户选择发送回复 */
         ACTION_SEND_REPLY,
-		/** 告诉用户无法回复，比如我们的程序没有设置为默认的短信程序 */
-		SPEAK_UNABLE_TO_REPLY,
-		/** 提示用户开始听用户的回复的内容 */
-		SPEAK_DICTATE_REPLY_CONTENT_START,
-		/** 提示用户上次听取失败，重新开始听用户的回复的内容 */
-		SPEAK_DICTATE_REPLY_CONTENT_START_AGAIN,
-		/** 重复一遍用户输入的内容 */
-		SPEAK_REPEAT_REPLY_CONTENT,
-		/** 询问用户是否确定回复 */
-		ASK_IF_SENT_REPLY,
-		/** 上次听取失败，再次询问用户是否确定回复 */
-		ASK_IF_SENT_REPLY_AGAIN,
 		/** 发送成功 */
-		SPEAK_REPLY_OK,
+		SPEAK_SEND_REPLY_OK,
 		/** 发送失败 */
-		SPEAK_REPLY_FAILED,
+		SPEAK_SEND_REPLY_FAILED,
 		/** 程序即将退出 */
 		SPEAK_ABOUT_ABORTING,
 		/** 失败次数太多 */
 		SPEAK_TOO_MANY_FAILED_TRIALS,
 		/** 操作完成 */
 		ACTION_DONE;
-	}
-	
-	/**
-	 * 每个听取失败后重试的次数.
-	 */
-	protected static final int MAX_RETRIAL_TIMES = 3;
-
-	public boolean speakUnableToReply() {
-		// TODO Auto-generated method stub
-		return true;
-	}
-
-	public boolean speakDictateReplyContentStart() {
-		// TODO Auto-generated method stub
-		return true;
-	}
-
-	public boolean speakDictateReplyContentFailed() {
-		// TODO Auto-generated method stub
-		return true;
-	}
-
-	public boolean speakDictateReplyContentStartAgain() {
-		// TODO Auto-generated method stub
-		return true;
-	}
-
-	public boolean speakRepeatReplyContent() {
-		// TODO Auto-generated method stub
-		return true;
-	}
-
-	public boolean speakAskIfSentReply() {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	public boolean speakAskIfSentReplyAgain() {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	public boolean sendReply() {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	public boolean speakReplyOk() {
-		// TODO Auto-generated method stub
-		return true;
-	}
-
-	public boolean speakReplyFailed() {
-		// TODO Auto-generated method stub
-		return true;
-	}
-
-	public boolean speakAboutAborting() {
-		String text = mResourceManager.getString(R.string.speak_about_aborting, abortingCommand);
-        SpeakResult result = mEngine.speak(text, this);
-        l.debug("speakAboutAborting text:" + text +" , returns:" + result);
-
-        // TODO we should disable our app here.
-        this.setNextAction(NextAction.ACTION_DONE);
-        return true;
-	}
-
-	public boolean speakTooManyFailedTrials() {
-        String text = mResourceManager.getString(R.string.speak_too_many_trials);
-        SpeakResult result = mEngine.speak(text, this);
-        l.debug("speakTooManyFailedTrials text:" + text +" , returns:" + result);
-
-        // TODO we should disable our app here.
-        this.setNextAction(NextAction.ACTION_DONE);
-        return true;
 	}
 }

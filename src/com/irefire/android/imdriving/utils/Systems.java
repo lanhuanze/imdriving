@@ -51,7 +51,7 @@ public class Systems {
         Intent headlessSmsSendServiceIntent = new Intent();
         headlessSmsSendServiceIntent.setAction("android.intent.action.RESPOND_VIA_MESSAGE");
         headlessSmsSendServiceIntent.addCategory("android.intent.category.DEFAULT");
-        headlessSmsSendServiceIntent.
+        //headlessSmsSendServiceIntent.
 
 
         return true;
