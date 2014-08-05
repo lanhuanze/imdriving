@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.telephony.SmsMessage;
 import android.text.TextUtils;
 import com.irefire.android.imdriving.event.EventSource;
+import com.irefire.android.imdriving.event.ShortMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,11 +19,12 @@ import java.lang.reflect.Method;
 public class SmsReceiver extends BroadcastReceiver {
 
     private static final Logger l = LoggerFactory.getLogger(SmsReceiver.class.getSimpleName());
+    private static Method createFromPduMethod = null;
 
     public static SmsMessage[] getMessagesFromIntent(Intent intent) {
         Object[] messages = (Object[]) intent.getSerializableExtra("pdus");
-        if(messages == null && intent.getExtras() != null) {
-            messages = (Object[])intent.getExtras().get("pdus");
+        if (messages == null && intent.getExtras() != null) {
+            messages = (Object[]) intent.getExtras().get("pdus");
         }
         String format = intent.getStringExtra("format");
 
@@ -37,8 +39,6 @@ public class SmsReceiver extends BroadcastReceiver {
         return msgs;
     }
 
-    private static Method createFromPduMethod = null;
-
     private static SmsMessage createFromPdu(byte[] pdu, String format) {
         SmsMessage message = null;
         if (TextUtils.isEmpty(format)) {
@@ -47,7 +47,7 @@ public class SmsReceiver extends BroadcastReceiver {
             Class clz = SmsMessage.class;
 
             try {
-                if(createFromPduMethod == null) {
+                if (createFromPduMethod == null) {
                     createFromPduMethod = clz.getDeclaredMethod("createFromPdu", byte[].class, String.class);
                 }
                 if (createFromPduMethod != null) {
@@ -69,12 +69,15 @@ public class SmsReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        if(intent != null) {
+        if (intent != null) {
             NotificationProcessor np = NotificationProcessor.getInstance();
             SmsMessage[] messages = getMessagesFromIntent(intent);
-            for(SmsMessage sms: messages) {
-                l.debug("enqueueEvent sms:" + sms);
-                np.enqueueEventSource(new EventSource(sms));
+            if (messages != null && messages.length > 0) {
+                ShortMessage m = ShortMessage.from(messages);
+
+                l.debug("enqueueEvent ShortMessage:" + m);
+                np.enqueueEventSource(new EventSource(m));
+
             }
         }
     }

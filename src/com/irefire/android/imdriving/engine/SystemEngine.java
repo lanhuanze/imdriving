@@ -157,6 +157,7 @@ public class SystemEngine implements Engine, AppSettings.SettingChangeListener {
 		} else {
 			mTextToSpeech = new TextToSpeech(mContext, mTextToSpeechInitListener);
 		}
+       // mTextToSpeech.setLanguage(new Locale(mSettings.getTtsLanguage()));
 		mTextToSpeech.setOnUtteranceProgressListener(mSpeakListener);
 		initialized = true;
 	}
@@ -181,7 +182,8 @@ public class SystemEngine implements Engine, AppSettings.SettingChangeListener {
 		HashMap<String, String> params = new HashMap<String, String>();
 		params.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, result.utteranceId);
 		mSpeakListener.add(result);
-		int retValue = mTextToSpeech.speak(text, TextToSpeech.QUEUE_ADD, params);
+        mTextToSpeech.setLanguage(new Locale(mSettings.getTtsLanguage()));
+        int retValue = mTextToSpeech.speak(text, TextToSpeech.QUEUE_ADD, params);
 		l.debug("speak text:" + text + ", returns " + retValue);
 		if (TextToSpeech.SUCCESS == retValue) {
 			// 我们要等到说完了才返回,通知在SpeakListener里。

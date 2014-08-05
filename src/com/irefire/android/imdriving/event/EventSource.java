@@ -8,9 +8,9 @@ import android.telephony.SmsMessage;
  */
 public class EventSource {
     public StatusBarNotification notification;
-    public SmsMessage sms;
+    public ShortMessage sms;
 
-    public EventSource(SmsMessage sms) {
+    public EventSource(ShortMessage sms) {
         this.sms = sms;
     }
 

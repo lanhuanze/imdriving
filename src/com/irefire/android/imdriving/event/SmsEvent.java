@@ -65,7 +65,7 @@ public class SmsEvent extends Event {
 
     @Override
     public boolean actionDictateReplyContent() {
-        String text = dictateTextWithTimeout(Constants.SPEAK_TIME_OUT, NextAction.SPEAK_DICTATE_REPLY_CONTENT_START_AGAIN);
+        String text = dictateTextWithTimeout(Constants.SPEAK_TIME_OUT, NextAction.SPEAK_REPEAT_REPLY_CONTENT, NextAction.SPEAK_DICTATE_REPLY_CONTENT_START_AGAIN);
         if(!TextUtils.isEmpty(text)) {
             replyContent = text;
             return true;
@@ -110,7 +110,8 @@ public class SmsEvent extends Event {
 
     public boolean speakRepeatReplyContent(){
         if(!TextUtils.isEmpty(replyContent)) {
-            return speakAndGotoNextAction(replyContent, NextAction.SPEAK_ASK_IF_SENT_REPLY, NextAction.ACTION_DONE);
+            String speakText = mResourceManager.getString(R.string.new_sms_repeat_reply_content, replyContent);
+            return speakAndGotoNextAction(speakText, NextAction.SPEAK_ASK_IF_SENT_REPLY, NextAction.ACTION_DONE);
         }else {
             String askText = mResourceManager.getString(R.string.new_sms_reply_content_is_empty);
             return speakAndGotoNextAction(askText, NextAction.ACTION_DICTATE_REPLY_CONTENT, NextAction.ACTION_DONE);
@@ -119,7 +120,7 @@ public class SmsEvent extends Event {
     public boolean speakAskIfSendReply() {
 
         String askText = mResourceManager.getString(R.string.new_sms_ask_if_send_reply);
-        return speakAndGotoNextAction(askText, NextAction.ACTION_SEND_REPLY, NextAction.ACTION_DONE);
+        return speakAndGotoNextAction(askText, NextAction.ACTION_DICTATE_IF_SENT_REPLY, NextAction.ACTION_DONE);
     }
     public boolean speakAskIfSendReplyAgain() {
         String askText = mResourceManager.getString(R.string.new_sms_ask_if_send_reply_again);

@@ -29,19 +29,19 @@
 	<string name="new_notification_title_and_content">The title is %1$s and the content is %2$s</string>
 	<string name="new_notification_tip">You got new notification from %1$s</string>
 	<string name="new_notification_ask_if_read">Say yes to read or say no to ignore.</string>
-    <string name="new_notification_ask_if_read_again">Sorry, I can here clearly, could you speak again. Say yes to read or say no to ignore</string>
+    <string name="new_notification_ask_if_read_again">Sorry, I cannot hear clearly, could you speak again. Say yes to read or say no to ignore</string>
 
     <string name="new_sms_from_and_content">The short message is from %1$s and the content is %2$s</string>
     <string name="new_sms_tip">You got new short message from %1$s</string>
     <string name="new_sms_ask_if_reply">Do you want to reply, say yes to reply or say no to ignore.</string>
     <string name="new_sms_dictate_content_start">Please say your reply message.</string>
-    <string name="new_sms_dictate_content_start_again">Sorry, I can here clearly. Could you say your reply message again.</string>
-    <string name="new_sms_ask_if_send_reply">Say yes to send your message or say no to discard.</string>
-    <string name="new_sms_ask_if_send_reply_again">Sorry, I can here clearly. Say yes to send your message or say no to discard.</string>
-    <string name="new_sms_sent_ok">Message sent successfully.</string>
+    <string name="new_sms_dictate_content_start_again">Sorry, I cannot hear clearly. Could you say your reply message again.</string>
+    <string name="new_sms_ask_if_send_reply">Say yes to send the message or say no to discard.</string>
+    <string name="new_sms_ask_if_send_reply_again">Sorry, I cannot hear clearly. Say yes to send your message or say no to discard.</string>
+    <string name="new_sms_sent_ok">Message replied successfully.</string>
     <string name="new_sms_sent_failed">Message sent failed with problem %1$s.</string>
     <string name="new_sms_reply_content_is_empty">Sorry the reply message is empty, please say your message again.</string>
-
+    <string name="new_sms_repeat_reply_content">The message about to send is %1$s.</string>
 
     <string name="speak_about_aborting">I am about aborting since hearing the command %1$s</string>
     <string name="speak_too_many_trials">Sorry, too many failed trials, bye.</string>

@@ -11,6 +11,7 @@ import android.content.IntentFilter;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ServiceInfo;
+import android.text.TextUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,5 +61,38 @@ public class Systems {
     public static List<String> getMessagePackages() {
 
         return null;
+    }
+
+    /**
+     * 把电话号码格式化成语音比较好读的格式。
+     * @param str
+     * @return
+     */
+    public static String formatPhoneNumber(String str) {
+        if(TextUtils.isEmpty(str)) {
+            return "";
+        }
+
+        while(str.startsWith("+") || str.startsWith("0")) {
+            str = str.substring(1);
+        }
+        StringBuffer buffer = new StringBuffer(str.length() * 2);
+        boolean ajointDigital = false;
+        char cs[] = str.toCharArray();
+        for(char c: cs) {
+
+            // 如果前一个字符是数字，则在它之后加一个点。
+            if(ajointDigital) {
+                buffer.append(" ");
+            }
+            buffer.append(c);
+
+            if(Character.isDigit(c)) {
+                ajointDigital = true;
+            }else {
+                ajointDigital = false;
+            }
+        }
+        return buffer.toString();
     }
 }

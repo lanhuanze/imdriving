@@ -96,6 +96,7 @@ public final class NotificationProcessor {
                 eventsources.clear();
             } finally {
                 generateThreadStarted = false;
+                stopGenerateThread = false;
             }
         }
     }
@@ -213,6 +214,7 @@ public final class NotificationProcessor {
 
             } finally {
                 processThreadStarted = false;
+                stopProcessThread = false;
             }
         }
     }

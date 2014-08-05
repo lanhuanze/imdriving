@@ -4,7 +4,7 @@ import android.telephony.SmsMessage;
 import android.text.TextUtils;
 import com.irefire.android.imdriving.R;
 import com.irefire.android.imdriving.engine.*;
-import com.irefire.android.imdriving.utils.ContactsManager;
+import com.irefire.android.imdriving.utils.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,9 +14,6 @@ import android.service.notification.StatusBarNotification;
 import com.irefire.android.imdriving.App;
 import com.irefire.android.imdriving.engine.Engine.EngineResult;
 import com.irefire.android.imdriving.service.ResourceManager;
-import com.irefire.android.imdriving.utils.AppSettings;
-import com.irefire.android.imdriving.utils.Constants;
-import com.irefire.android.imdriving.utils.NotificationUtils;
 import org.w3c.dom.Text;
 
 import java.util.Collections;
@@ -269,7 +266,7 @@ public abstract class Event {
         return result.result == Engine.EngineResult.OK;
     }
 
-    protected final String dictateTextWithTimeout(long timeout, NextAction againAction) {
+    protected final String dictateTextWithTimeout(long timeout,NextAction okAction, NextAction againAction) {
         this.status = EventStatus.LISTENING;
         DictationResult result = mEngine.dictateText(this,
                 timeout);
@@ -288,6 +285,7 @@ public abstract class Event {
             Collections.sort(result.texts);
             matchCommand = true;
             trialTimes = 0;
+            this.setNextAction(okAction);
             return result.texts.get(0).getText();
         }
         if(!matchCommand) {
@@ -316,16 +314,13 @@ public abstract class Event {
 		return event;
 	}
 
-    public static final Event createEvent(SmsMessage sms) {
+    public static final Event createEvent(ShortMessage sms) {
         Context c = App.getStaticContext();
         ContactsManager cm = ContactsManager.getInstance();
         ResourceManager rm = ResourceManager.getInstance();
         SmsEvent event = new SmsEvent(c);
-        String phoneNumber = sms.getOriginatingAddress();
-        if(TextUtils.isEmpty(phoneNumber)) {
-            phoneNumber = sms.getDisplayOriginatingAddress();
-        }
 
+        String phoneNumber = sms.getFromAddress();
         event.setFromPhoneNumber(phoneNumber);
 
         String name = cm.getName(phoneNumber);
@@ -335,13 +330,10 @@ public abstract class Event {
             name = phoneNumber;
         }
 
-        String content = sms.getMessageBody();
-        if(TextUtils.isEmpty(content)) {
-            content = sms.getDisplayMessageBody();
-        }
+        name = Systems.formatPhoneNumber(name);
 
         event.setTips(rm.getString(R.string.new_sms_tip, name));
-        event.setContent(rm.getString(R.string.new_sms_from_and_content, name, content));
+        event.setContent(rm.getString(R.string.new_sms_from_and_content, name, sms.getBody()));
         return event;
     }
 	
