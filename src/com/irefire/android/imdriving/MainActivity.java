@@ -134,6 +134,9 @@ public class MainActivity extends Activity implements View.OnClickListener {
             startActivity(intent);
             return true;
         } else if (id == R.id.action_subscribe) {
+            Intent intent = new Intent();
+            intent.setClass(this, IAPActivity.class);
+            startActivity(intent);
             return true;
         }
         return super.onOptionsItemSelected(item);
