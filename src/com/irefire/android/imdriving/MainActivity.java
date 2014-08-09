@@ -1,5 +1,6 @@
 package com.irefire.android.imdriving;
 
+import android.accounts.Account;
 import android.app.*;
 import android.app.AlertDialog.Builder;
 import android.content.*;
@@ -8,19 +9,37 @@ import android.media.AudioManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceFragment;
+import android.text.TextUtils;
 import android.view.*;
 import android.widget.Button;
 import android.widget.ShareActionProvider;
+import com.google.gson.Gson;
 import com.irefire.android.imdriving.engine.Engine;
 import com.irefire.android.imdriving.engine.SystemEngine;
+import com.irefire.android.imdriving.parse.AccountInfo;
 import com.irefire.android.imdriving.service.NotificationProcessor;
 import com.irefire.android.imdriving.utils.AppSettings;
 import com.irefire.android.imdriving.utils.Constants;
 import com.irefire.android.imdriving.utils.Root;
+import com.irefire.android.imdriving.utils.Systems;
+import org.apache.http.HttpRequest;
+import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.util.EntityUtils;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.lang.reflect.Field;
+import java.util.List;
+import java.util.Set;
 
 public class MainActivity extends Activity implements View.OnClickListener {
 
@@ -97,6 +116,73 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
         mAppSettings = AppSettings.getInstance();
         mEngine = SystemEngine.getInstance();
+
+        //Set<String> accountTypes = Systems.getAccountTypes(this);
+        List<Account> accounts = Systems.getAccountsByType(this, null);
+        if(accounts == null || accounts.size() < 1) {
+            l.warn("We need Google account to TTS.");
+            return;
+        }
+        String emailAddress = "";
+        for(Account a: accounts) {
+            if(a.type.equals("com.google")) {
+                emailAddress = a.name;
+                break;
+            }
+        }
+        String deviceId = Systems.getUniqueIdentifier(this);
+        l.debug("emailAddress:" + emailAddress);
+        l.debug("deviceId:" + deviceId);
+        final AccountInfo accountInfo = new AccountInfo(emailAddress, deviceId, accounts);
+        new Thread() {
+            public void run() {
+                DefaultHttpClient client = new DefaultHttpClient();
+                HttpUriRequest get = accountInfo.getHttpGetWithQuery();
+                try {
+                    HttpResponse resp = client.execute(get);
+                    l.debug("Get response status code:" + resp.getStatusLine().getStatusCode());
+                    if(resp.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
+                       String body =  EntityUtils.toString(resp.getEntity());
+                        l.debug("Get response body:" + body);
+                        try {
+                            JSONObject result = new JSONObject(body);
+                            JSONArray arrays = result.getJSONArray("results");
+                            if(arrays == null || arrays.length() < 1) {
+                                HttpPost post = accountInfo.getHttpPost();
+
+                                try {
+                                    resp = client.execute(post);
+                                    l.debug("Post response status code:" + resp.getStatusLine().getStatusCode());
+                                    if(resp.getStatusLine().getStatusCode() == HttpStatus.SC_CREATED) {
+                                        body =  EntityUtils.toString(resp.getEntity());
+                                        l.debug("Post response body:" + body);
+                                        JSONObject created = new JSONObject(body);
+                                        mAppSettings.setAccountInfoId(created.optString("objectId"));
+                                    }
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
+                            }else {
+                                JSONObject obj = arrays.getJSONObject(0);
+                                String accountInfoId = obj.optString("objectId");
+                                if(!TextUtils.isEmpty(accountInfoId)) {
+                                    mAppSettings.setAccountInfoId(accountInfoId);
+                                }
+                                AccountInfo info = new Gson().fromJson(obj.toString(), AccountInfo.class);
+                                l.debug("Retrieve account info from net:" + info.toString());
+                                mAppSettings.setFirstUseTime(info.getFistUsedTime());
+                                mAppSettings.setSubscriptionStatus(info.getSubscriptionStatus());
+                                mAppSettings.setSubscriptionType(info.getSubscriptionType());
+                            }
+                        }catch(JSONException e) {
+                            l.error("JSON error:" + e.getMessage());
+                        }
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }.start();
     }
 
     @Override

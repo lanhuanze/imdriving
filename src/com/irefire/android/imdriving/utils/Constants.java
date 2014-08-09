@@ -9,4 +9,6 @@ public class Constants {
 	public static final String NOTIFICATION_ENABLED = "com.irefire.android.imdriving.utils.NOTIFICATION_ENABLED";
 
     public static final String READ_APP_SAVED_FILE_NAME = "readapp.xml";
+
+    public static final long ONE_DAY = 24 * 3600 * 1000; // 一天的毫秒数。
 }

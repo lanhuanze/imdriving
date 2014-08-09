@@ -422,6 +422,17 @@ public class IAPActivity extends Activity {
         }
     }
 
+    public void onSubscribeClicked(View view) {
+        int id = view.getId();
+        if(R.id.subscption_monthly == id) {
+
+        }else if(R.id.subscption_yearly == id) {
+
+        }else {
+            l.warn("Unknown view clicked.");
+        }
+    }
+
     // We're being destroyed. It's important to dispose of the helper here!
     @Override
     public void onDestroy() {
