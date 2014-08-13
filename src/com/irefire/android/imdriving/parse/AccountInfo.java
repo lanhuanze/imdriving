@@ -2,7 +2,6 @@ package com.irefire.android.imdriving.parse;
 
 import android.accounts.Account;
 import android.text.TextUtils;
-import com.android.vending.billing.utils.Subscription;
 import com.google.gson.Gson;
 import com.irefire.android.imdriving.utils.AppSettings;
 import com.irefire.android.imdriving.utils.Systems;
@@ -29,9 +28,6 @@ public class AccountInfo implements ParseOp {
     public String emailAddress;
     public String deviceId;
     public long fistUsedTime;
-    public Subscription.Type subscriptionType;
-    public Subscription.Status subscriptionStatus;
-    public long subscriptionTime;
     public List<Account> accountList = new ArrayList<Account>();
 
     public AccountInfo(String email, String devid, List<Account> accounts) {
@@ -55,8 +51,6 @@ public class AccountInfo implements ParseOp {
         accountList.addAll(accounts);
         AppSettings settings = AppSettings.getInstance();
         this.fistUsedTime = settings.getFirstUseTime();
-        subscriptionType = settings.getSubscriptionType();
-        subscriptionStatus = settings.getSubscriptionStatus();
     }
 
     @Override
@@ -171,30 +165,6 @@ public class AccountInfo implements ParseOp {
 
     public void setFistUsedTime(long fistUsedTime) {
         this.fistUsedTime = fistUsedTime;
-    }
-
-    public Subscription.Type getSubscriptionType() {
-        return subscriptionType;
-    }
-
-    public void setSubscriptionType(Subscription.Type subscriptionType) {
-        this.subscriptionType = subscriptionType;
-    }
-
-    public Subscription.Status getSubscriptionStatus() {
-        return subscriptionStatus;
-    }
-
-    public void setSubscriptionStatus(Subscription.Status subscriptionStatus) {
-        this.subscriptionStatus = subscriptionStatus;
-    }
-
-    public long getSubscriptionTime() {
-        return subscriptionTime;
-    }
-
-    public void setSubscriptionTime(long subscriptionTime) {
-        this.subscriptionTime = subscriptionTime;
     }
 
     public List<Account> getAccountList() {

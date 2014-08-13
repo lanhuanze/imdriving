@@ -17,6 +17,7 @@ import com.google.gson.Gson;
 import com.irefire.android.imdriving.engine.Engine;
 import com.irefire.android.imdriving.engine.SystemEngine;
 import com.irefire.android.imdriving.parse.AccountInfo;
+import com.irefire.android.imdriving.parse.UpdateParseService;
 import com.irefire.android.imdriving.service.NotificationProcessor;
 import com.irefire.android.imdriving.utils.AppSettings;
 import com.irefire.android.imdriving.utils.Constants;
@@ -117,72 +118,14 @@ public class MainActivity extends Activity implements View.OnClickListener {
         mAppSettings = AppSettings.getInstance();
         mEngine = SystemEngine.getInstance();
 
-        //Set<String> accountTypes = Systems.getAccountTypes(this);
-        List<Account> accounts = Systems.getAccountsByType(this, null);
-        if(accounts == null || accounts.size() < 1) {
-            l.warn("We need Google account to TTS.");
-            return;
+        l.debug("AccountInfoId:" + mAppSettings.getAccountInfoId());
+        if(TextUtils.isEmpty(mAppSettings.getAccountInfoId())) {
+            Intent intent = new Intent();
+            intent.setAction(UpdateParseService.ACTION_QUERY_ACCOUNT_INFO);
+            intent.setClass(this, UpdateParseService.class);
+            startService(intent);
         }
-        String emailAddress = "";
-        for(Account a: accounts) {
-            if(a.type.equals("com.google")) {
-                emailAddress = a.name;
-                break;
-            }
-        }
-        String deviceId = Systems.getUniqueIdentifier(this);
-        l.debug("emailAddress:" + emailAddress);
-        l.debug("deviceId:" + deviceId);
-        final AccountInfo accountInfo = new AccountInfo(emailAddress, deviceId, accounts);
-        new Thread() {
-            public void run() {
-                DefaultHttpClient client = new DefaultHttpClient();
-                HttpUriRequest get = accountInfo.getHttpGetWithQuery();
-                try {
-                    HttpResponse resp = client.execute(get);
-                    l.debug("Get response status code:" + resp.getStatusLine().getStatusCode());
-                    if(resp.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
-                       String body =  EntityUtils.toString(resp.getEntity());
-                        l.debug("Get response body:" + body);
-                        try {
-                            JSONObject result = new JSONObject(body);
-                            JSONArray arrays = result.getJSONArray("results");
-                            if(arrays == null || arrays.length() < 1) {
-                                HttpPost post = accountInfo.getHttpPost();
 
-                                try {
-                                    resp = client.execute(post);
-                                    l.debug("Post response status code:" + resp.getStatusLine().getStatusCode());
-                                    if(resp.getStatusLine().getStatusCode() == HttpStatus.SC_CREATED) {
-                                        body =  EntityUtils.toString(resp.getEntity());
-                                        l.debug("Post response body:" + body);
-                                        JSONObject created = new JSONObject(body);
-                                        mAppSettings.setAccountInfoId(created.optString("objectId"));
-                                    }
-                                } catch (IOException e) {
-                                    e.printStackTrace();
-                                }
-                            }else {
-                                JSONObject obj = arrays.getJSONObject(0);
-                                String accountInfoId = obj.optString("objectId");
-                                if(!TextUtils.isEmpty(accountInfoId)) {
-                                    mAppSettings.setAccountInfoId(accountInfoId);
-                                }
-                                AccountInfo info = new Gson().fromJson(obj.toString(), AccountInfo.class);
-                                l.debug("Retrieve account info from net:" + info.toString());
-                                mAppSettings.setFirstUseTime(info.getFistUsedTime());
-                                mAppSettings.setSubscriptionStatus(info.getSubscriptionStatus());
-                                mAppSettings.setSubscriptionType(info.getSubscriptionType());
-                            }
-                        }catch(JSONException e) {
-                            l.error("JSON error:" + e.getMessage());
-                        }
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }.start();
     }
 
     @Override
@@ -217,11 +160,6 @@ public class MainActivity extends Activity implements View.OnClickListener {
         } else if (id == R.id.action_filter_app) {
             Intent intent = new Intent();
             intent.setClass(this, FilterAppActivity.class);
-            startActivity(intent);
-            return true;
-        } else if (id == R.id.action_subscribe) {
-            Intent intent = new Intent();
-            intent.setClass(this, IAPActivity.class);
             startActivity(intent);
             return true;
         }
