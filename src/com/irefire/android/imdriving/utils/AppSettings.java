@@ -22,14 +22,16 @@ public class AppSettings {
     private static final String KEY_FIRST_USED_TIME = "first_used_time";
     private static final String KEY_LAST_USED_TIME = "last_used_time";
     private static final String KEY_ACCOUNT_INFO_ID = "account_info_id";
+    private static final String KEY_FIRST_LAUNCH = "first_launch";
     /**
      * Read the notification without
      */
     private boolean autoRead = false;
-    private String ttsLanguage = "cmn-CHN"; //中文
+    private String ttsLanguage = "en_US"; //中文
     private String ttsVoice = "Samantha";
     private Locale mLocale = Locale.US;
     private boolean mServiceStarted = false;
+    private boolean mFirstLaunch = true;
     private BitSet changeSet = new BitSet();
     private Context mContext = null;
     /**
@@ -72,6 +74,7 @@ public class AppSettings {
         this.firstUseTime = mPrefs.getLong(KEY_FIRST_USED_TIME, System.currentTimeMillis());
         this.lastUseTime = mPrefs.getLong(KEY_LAST_USED_TIME, System.currentTimeMillis());
         this.accountInfoId = mPrefs.getString(KEY_ACCOUNT_INFO_ID, "");
+        this.fi
         l.debug("Language:" + ttsLanguage);
         l.debug("AutoRead:" + autoRead);
         l.debug("firstUseTime:" + new Date(firstUseTime));

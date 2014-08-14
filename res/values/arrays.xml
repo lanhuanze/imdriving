@@ -37,9 +37,11 @@
         <item>English (New Zealand)</item>
         <item>English (South Africa)</item>
         <item>English (UK)</item>
+        <!-- 斩时只支持英文
         <item>國語（台灣）</item>
         <item>普通話（香港）</item>
         <item>普通话（中国大陆）</item>
+        -->
     </string-array>
     <string-array name="supported_languages_value" translate="false">
         <item>en_US</item>
@@ -50,9 +52,11 @@
         <item>en_NZ</item>
         <item>en_ZA</item>
         <item>en_UK</item>
+        <!--
         <item>zh_TW</item>
         <item>zh_HK</item>
         <item>zh_CN</item>
+        -->
     </string-array>
 
     <string-array name="empty_arrays"/>

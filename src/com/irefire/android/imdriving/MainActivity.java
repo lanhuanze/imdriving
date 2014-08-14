@@ -1,98 +1,77 @@
 package com.irefire.android.imdriving;
 
-import android.accounts.Account;
 import android.app.*;
 import android.app.AlertDialog.Builder;
-import android.content.*;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
+import android.content.Intent;
 import android.media.AudioManager;
 import android.os.Bundle;
 import android.os.Handler;
-import android.preference.PreferenceFragment;
+import android.provider.Settings;
 import android.text.TextUtils;
 import android.view.*;
 import android.widget.Button;
 import android.widget.ShareActionProvider;
-import com.google.gson.Gson;
 import com.irefire.android.imdriving.engine.Engine;
 import com.irefire.android.imdriving.engine.SystemEngine;
-import com.irefire.android.imdriving.parse.AccountInfo;
 import com.irefire.android.imdriving.parse.UpdateParseService;
 import com.irefire.android.imdriving.service.NotificationProcessor;
 import com.irefire.android.imdriving.utils.AppSettings;
-import com.irefire.android.imdriving.utils.Constants;
 import com.irefire.android.imdriving.utils.Root;
-import com.irefire.android.imdriving.utils.Systems;
-import org.apache.http.HttpRequest;
-import org.apache.http.HttpResponse;
-import org.apache.http.HttpStatus;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.methods.HttpUriRequest;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.util.EntityUtils;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.lang.reflect.Field;
-import java.util.List;
-import java.util.Set;
 
 public class MainActivity extends Activity implements View.OnClickListener {
 
-    private static final int TEST_NOTIFICATION_ID = 0x612;
     private static final Logger l = LoggerFactory.getLogger(MainActivity.class.getSimpleName());
     private Handler mHandler = new Handler();
     private ShareActionProvider mShareActionProvider = null;
     private Button startButton = null;
     private AppSettings mAppSettings = null;
     private Engine mEngine = null;
-    private BroadcastReceiver mNotificationCheckReceiver = new NotificationEnableReceiver();
 
     private NotificationManager mNotificationManager = null;
     private Dialog mNotificationServiceDialog = null;
     private boolean isNotificationServiceDialogShowing = false;
-    private Runnable mShowEnableNotificationDialog = new Runnable() {
-        public void run() {
-            AlertDialog.Builder builder = new Builder(MainActivity.this);
-            builder.setMessage(R.string.enable_notification_service_content);
 
-            builder.setTitle(R.string.enable_notification_service_title);
-            builder.setCancelable(false);
+    private void showEnabledNotificationDialog() {
+        AlertDialog.Builder builder = new Builder(MainActivity.this);
+        builder.setMessage(R.string.enable_notification_service_content);
 
-            builder.setPositiveButton(android.R.string.ok,
-                    new OnClickListener() {
+        builder.setTitle(R.string.enable_notification_service_title);
+        builder.setCancelable(false);
 
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            dialog.dismiss();
-                            mNotificationServiceDialog = null;
-                            startActivity(new Intent(
-                                    "android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS"));
-                        }
-                    });
+        builder.setPositiveButton(android.R.string.ok,
+                new OnClickListener() {
 
-            builder.setNegativeButton(android.R.string.cancel,
-                    new OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                        mNotificationServiceDialog = null;
+                        startActivity(new Intent(
+                                "android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS"));
+                    }
+                });
 
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            dialog.dismiss();
-                            mNotificationServiceDialog = null;
-                            MainActivity.this.finish();
-                            System.exit(0);
-                        }
-                    });
+        builder.setNegativeButton(android.R.string.cancel,
+                new OnClickListener() {
 
-            mNotificationServiceDialog = builder.create();
-            mNotificationServiceDialog.show();
-            isNotificationServiceDialogShowing = true;
-        }
-    };
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                        mNotificationServiceDialog = null;
+                        MainActivity.this.finish();
+                        System.exit(0);
+                    }
+                });
+
+        mNotificationServiceDialog = builder.create();
+        mNotificationServiceDialog.show();
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -119,7 +98,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
         mEngine = SystemEngine.getInstance();
 
         l.debug("AccountInfoId:" + mAppSettings.getAccountInfoId());
-        if(TextUtils.isEmpty(mAppSettings.getAccountInfoId())) {
+        if (TextUtils.isEmpty(mAppSettings.getAccountInfoId())) {
             Intent intent = new Intent();
             intent.setAction(UpdateParseService.ACTION_QUERY_ACCOUNT_INFO);
             intent.setClass(this, UpdateParseService.class);
@@ -169,38 +148,17 @@ public class MainActivity extends Activity implements View.OnClickListener {
     @Override
     protected void onResume() {
         super.onResume();
-        IntentFilter filter = new IntentFilter(Constants.NOTIFICATION_ENABLED);
-        this.registerReceiver(mNotificationCheckReceiver, filter);
-
-        if (!isNotificationServiceDialogShowing) {
-            // We will delay 200 to show the dialog in case we had enabled it.
-            mHandler.postDelayed(mShowEnableNotificationDialog, 200);
-
-            // then we generate a notification, if the Notificationlistener received
-            // it.
-            // He will send a broadcast to {NotificationEnableReciever};
-            generateCheckNotification();
-            mHandler.postDelayed(new Runnable() {
-                public void run() {
-                    cleanCheckNotification();
-                }
-            }, 50); // we will clean the notification in 50 ms.
+        String notificationsPackages = Settings.Secure.getString(getContentResolver(), "enabled_notification_listeners");
+        if (TextUtils.isEmpty(notificationsPackages) || !notificationsPackages.contains(getPackageName())) {
+            if (!isNotificationServiceDialogShowing) {
+                showEnabledNotificationDialog();
+            }
         }
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        this.unregisterReceiver(mNotificationCheckReceiver);
-    }
-
-    private void generateCheckNotification() {
-        Notification n = new Notification.Builder(this)
-                .setSmallIcon(R.drawable.ic_launcher)
-                .setContentTitle(getString(R.string.test_notification_title))
-                .setContentText(getString(R.string.test_notification_content))
-                .build();
-        mNotificationManager.notify(TEST_NOTIFICATION_ID, n);
     }
 
     private void getOverflowMenu() {
@@ -215,10 +173,6 @@ public class MainActivity extends Activity implements View.OnClickListener {
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
-
-    private void cleanCheckNotification() {
-        mNotificationManager.cancel(TEST_NOTIFICATION_ID);
     }
 
     @Override
@@ -272,39 +226,5 @@ public class MainActivity extends Activity implements View.OnClickListener {
             super.onResume();
             this.getActivity().getActionBar().setTitle(R.string.app_name);
         }
-    }
-
-    public static class AppSettingsFragment extends PreferenceFragment {
-        @Override
-        public void onCreate(Bundle savedInstanceState) {
-            super.onCreate(savedInstanceState);
-            this.addPreferencesFromResource(R.xml.app_settings);
-        }
-
-        @Override
-        public void onResume() {
-            super.onResume();
-            this.getActivity().getActionBar().setTitle(R.string.app_settings);
-        }
-    }
-
-    private final class NotificationEnableReceiver extends BroadcastReceiver {
-
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            if (Constants.NOTIFICATION_ENABLED.equals(intent.getAction())) {
-                // if we receive notification enabled broadcast, we will
-                // re move the mShowEnableNotificationDialog.
-                mHandler.removeCallbacks(mShowEnableNotificationDialog);
-
-                if (mNotificationServiceDialog != null && mNotificationServiceDialog.isShowing()) {
-                    mNotificationServiceDialog.dismiss();
-                }
-                mNotificationServiceDialog = null;
-                isNotificationServiceDialogShowing = false;
-                l.debug("remove mShowEnableNotificationDialog");
-            }
-        }
-
     }
 }
