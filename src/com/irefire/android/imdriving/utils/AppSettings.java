@@ -74,7 +74,6 @@ public class AppSettings {
         this.firstUseTime = mPrefs.getLong(KEY_FIRST_USED_TIME, System.currentTimeMillis());
         this.lastUseTime = mPrefs.getLong(KEY_LAST_USED_TIME, System.currentTimeMillis());
         this.accountInfoId = mPrefs.getString(KEY_ACCOUNT_INFO_ID, "");
-        this.fi
         l.debug("Language:" + ttsLanguage);
         l.debug("AutoRead:" + autoRead);
         l.debug("firstUseTime:" + new Date(firstUseTime));
