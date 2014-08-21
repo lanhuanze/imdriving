@@ -2,4 +2,6 @@
 <resources>
     <dimen name="icon_size">16sp</dimen>
     <dimen name="padding_left">8sp</dimen>
+    <dimen name="start_button_size">160px</dimen>
+    <dimen name="start_button_text_size">8dip</dimen>
 </resources>

@@ -1,33 +1,27 @@
 package com.irefire.android.imdriving;
 
-import android.app.Activity;
 import android.app.ListActivity;
 import android.content.Context;
-import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.content.pm.ResolveInfo;
 import android.database.DataSetObserver;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.provider.SyncStateContract;
-import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.*;
 import com.irefire.android.imdriving.utils.AppSettings;
-import com.irefire.android.imdriving.utils.Constants;
+import com.irefire.android.imdriving.utils.Systems;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
 import java.util.*;
-import java.util.zip.Inflater;
+
+import static com.irefire.android.imdriving.utils.Systems.AppItem;
+
 
 /**
  * Created by lan on 7/31/14.
  */
-public class FilterAppActivity extends ListActivity implements View.OnClickListener{
+public class FilterAppActivity extends ListActivity implements View.OnClickListener {
 
     private static final Logger l = LoggerFactory.getLogger(FilterAppActivity.class.getSimpleName());
 
@@ -40,13 +34,13 @@ public class FilterAppActivity extends ListActivity implements View.OnClickListe
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         this.setContentView(R.layout.filter_app_main);
-        Set<AppItem> apps = this.getAllApps();
+        Set<AppItem> apps = Systems.getAllApps(this);
         mAppItems = new ArrayList<AppItem>(apps);
         mReadAppMap = new HashMap<String, Boolean>();
         mSettings = AppSettings.getInstance();
 
         List<String> saved = mSettings.getAllowedPackages();
-        for(String p: saved) {
+        for (String p : saved) {
             mReadAppMap.put(p, Boolean.TRUE);
         }
 
@@ -64,51 +58,35 @@ public class FilterAppActivity extends ListActivity implements View.OnClickListe
     @Override
     protected void onListItemClick(ListView l, View v, int position, long id) {
         //super.onListItemClick(l, v, position, id);
-        ViewTag tag = (ViewTag)v.getTag(R.id.app_filter_item_id);
-        if(tag != null) {
+        ViewTag tag = (ViewTag) v.getTag(R.id.app_filter_item_id);
+        if (tag != null) {
             boolean checked = tag.checkbox.isChecked();
-            if(!checked) {
+            if (!checked) {
                 mSelectedMap.put(tag.pkg.toString(), Boolean.TRUE);
-            }else {
+            } else {
                 mSelectedMap.remove(tag.pkg.toString());
             }
             tag.checkbox.setChecked(!checked);
         }
     }
 
-    private Set<AppItem> getAllApps() {
-        PackageManager pm = this.getPackageManager();
-        Intent mainIntent = new Intent(Intent.ACTION_MAIN, null);
-        mainIntent.addCategory(Intent.CATEGORY_LAUNCHER);
-        List<ResolveInfo> list = pm.queryIntentActivities(mainIntent, 0);
-        Set<AppItem> items = new HashSet<AppItem>();
-        for(ResolveInfo ai: list) {
-            AppItem item = new AppItem();
-            item.pkg = ai.activityInfo.packageName;
-            item.name = ai.activityInfo.loadLabel(pm);
-            item.icon = ai.activityInfo.loadIcon(pm);
-            items.add(item);
-        }
-        return items;
-    }
-
     @Override
     public void onClick(View v) {
         int id = v.getId();
-        if(id == R.id.app_filter_select_all_checkbox) {
-            boolean checked = ((CheckBox)v).isChecked();
+        if (id == R.id.app_filter_select_all_checkbox) {
+            boolean checked = ((CheckBox) v).isChecked();
             mSelectedMap.clear();
-            if(checked) {
-                for(AppItem ai: mAppItems) {
+            if (checked) {
+                for (AppItem ai : mAppItems) {
                     mSelectedMap.put(ai.pkg.toString(), Boolean.TRUE);
                 }
-            }else {
+            } else {
                 mSelectedMap.putAll(mReadAppMap);
             }
             this.setListAdapter(new AppItemAdapter(mAppItems, this, mSelectedMap));
-        }else if(id == R.id.app_filter_cancel) {
+        } else if (id == R.id.app_filter_cancel) {
             finish();
-        }else if(id == R.id.app_filter_save) {
+        } else if (id == R.id.app_filter_save) {
             mSettings.saveReadApps(mSelectedMap);
             mSettings.updateAllowedPackages(mSelectedMap);
             finish();
@@ -116,37 +94,11 @@ public class FilterAppActivity extends ListActivity implements View.OnClickListe
     }
 
 
-    private static final class AppItem implements Comparable<AppItem>{
-        public CharSequence pkg;
-        public CharSequence name;
-        public Drawable icon;
-
-        @Override
-        public boolean equals(Object o) {
-            if(this == o) {
-                return true;
-            }else if(o instanceof AppItem) {
-                AppItem ai = (AppItem)o;
-                return TextUtils.equals(pkg, ai.pkg);
-            }
-            return false;
-        }
-
-        @Override
-        public int hashCode() {
-            return super.hashCode() + name.hashCode() + pkg.hashCode();
-        }
-
-        @Override
-        public int compareTo(AppItem another) {
-            return name.toString().compareTo(another.name.toString());
-        }
-    }
-
     private static class AppItemAdapter implements ListAdapter {
         private List<AppItem> mApps;
         private Context mContext;
         private Map<String, Boolean> checkMap;
+
         public AppItemAdapter(List<AppItem> apps, Context c, Map<String, Boolean> checkMap) {
             mApps = apps;
             mContext = c;
@@ -170,7 +122,7 @@ public class FilterAppActivity extends ListActivity implements View.OnClickListe
 
         @Override
         public int getCount() {
-            return mApps == null? 0: mApps.size();
+            return mApps == null ? 0 : mApps.size();
         }
 
         @Override
@@ -190,24 +142,24 @@ public class FilterAppActivity extends ListActivity implements View.OnClickListe
 
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
-            if(convertView == null) {
+            if (convertView == null) {
                 convertView = LayoutInflater.from(mContext).inflate(R.layout.filter_app_item, null);
 
             }
             AppItem ai = mApps.get(position);
-            ViewTag tag = (ViewTag)convertView.getTag(R.id.app_filter_item_id);
+            ViewTag tag = (ViewTag) convertView.getTag(R.id.app_filter_item_id);
 
-            if(tag == null) {
+            if (tag == null) {
                 tag = new ViewTag();
-                tag.icon = (ImageView)convertView.findViewById(R.id.app_filter_icon);
-                tag.checkbox = (CheckBox)convertView.findViewById(R.id.app_filter_checkbox);
-                tag.name = (TextView)convertView.findViewById(R.id.app_filter_name);
-                convertView.setTag(R.id.app_filter_item_id,tag);
+                tag.icon = (ImageView) convertView.findViewById(R.id.app_filter_icon);
+                tag.checkbox = (CheckBox) convertView.findViewById(R.id.app_filter_checkbox);
+                tag.name = (TextView) convertView.findViewById(R.id.app_filter_name);
+                convertView.setTag(R.id.app_filter_item_id, tag);
             }
 
             tag.pkg = ai.pkg;
 
-            tag.fill(ai, checkMap.get(ai.pkg) == null? false: true);
+            tag.fill(ai, checkMap.get(ai.pkg) == null ? false : true);
             return convertView;
         }
 

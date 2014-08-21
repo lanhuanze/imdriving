@@ -5,6 +5,8 @@ import android.accounts.AccountManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
+import android.graphics.drawable.Drawable;
 import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.provider.Settings;
@@ -201,5 +203,48 @@ public class Systems {
 
 
         return true;
+    }
+
+    public static final class AppItem implements Comparable<AppItem>{
+        public CharSequence pkg;
+        public CharSequence name;
+        public Drawable icon;
+
+        @Override
+        public boolean equals(Object o) {
+            if(this == o) {
+                return true;
+            }else if(o instanceof AppItem) {
+                AppItem ai = (AppItem)o;
+                return TextUtils.equals(pkg, ai.pkg);
+            }
+            return false;
+        }
+
+        @Override
+        public int hashCode() {
+            return super.hashCode() + name.hashCode() + pkg.hashCode();
+        }
+
+        @Override
+        public int compareTo(AppItem another) {
+            return name.toString().compareTo(another.name.toString());
+        }
+    }
+
+    public static Set<AppItem> getAllApps(Context context) {
+        PackageManager pm = context.getPackageManager();
+        Intent mainIntent = new Intent(Intent.ACTION_MAIN, null);
+        mainIntent.addCategory(Intent.CATEGORY_LAUNCHER);
+        List<ResolveInfo> list = pm.queryIntentActivities(mainIntent, 0);
+        Set<AppItem> items = new HashSet<AppItem>();
+        for(ResolveInfo ai: list) {
+            AppItem item = new AppItem();
+            item.pkg = ai.activityInfo.packageName;
+            item.name = ai.activityInfo.loadLabel(pm);
+            item.icon = ai.activityInfo.loadIcon(pm);
+            items.add(item);
+        }
+        return items;
     }
 }

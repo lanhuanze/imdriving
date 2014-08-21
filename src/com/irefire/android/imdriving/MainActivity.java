@@ -135,6 +135,9 @@ public class MainActivity extends Activity implements View.OnClickListener {
             startActivity(intent);
             return true;
         } else if (id == R.id.action_help_to_translate) {
+            Intent intent = new Intent();
+            intent.setClass(this, TranslateActivity.class);
+            startActivity(intent);
             return true;
         } else if (id == R.id.action_filter_app) {
             Intent intent = new Intent();
@@ -154,6 +157,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 showEnabledNotificationDialog();
             }
         }
+
     }
 
     @Override
@@ -181,6 +185,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
         if (id == R.id.button_start_stop) {
             if (mAppSettings.getServiceStarted()) {
                 ((Button) v).setText(R.string.start_driving);
+                ((Button) v).setBackground(getResources().getDrawable(R.drawable.round_button_start));
                 new Thread() {
                     public void run() {
                         mEngine.speak(getString(R.string.bye_bye_message));
@@ -190,6 +195,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 NotificationProcessor.getInstance().stop();
             } else {
                 ((Button) v).setText(R.string.stop_driving);
+                ((Button) v).setBackground(getResources().getDrawable(R.drawable.round_button));
                 new Thread() {
                     public void run() {
                         mEngine.speak(getString(R.string.welcome_message));
@@ -204,9 +210,10 @@ public class MainActivity extends Activity implements View.OnClickListener {
     /**
      * A placeholder fragment containing a simple view.
      */
-    public static class PlaceholderFragment extends Fragment {
+    public class PlaceholderFragment extends Fragment {
 
         private View.OnClickListener mListener = null;
+        private Button mButton = null;
 
         public PlaceholderFragment(View.OnClickListener listener) {
             mListener = listener;
@@ -217,7 +224,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
                                  Bundle savedInstanceState) {
             View rootView = inflater.inflate(R.layout.fragment_main, container,
                     false);
-            rootView.findViewById(R.id.button_start_stop).setOnClickListener(mListener);
+            mButton = (Button)rootView.findViewById(R.id.button_start_stop);
+            mButton.setOnClickListener(mListener);
             return rootView;
         }
 
@@ -225,6 +233,13 @@ public class MainActivity extends Activity implements View.OnClickListener {
         public void onResume() {
             super.onResume();
             this.getActivity().getActionBar().setTitle(R.string.app_name);
+            if (!mAppSettings.getServiceStarted()) {
+                mButton.setText(R.string.start_driving);
+                mButton.setBackground(getResources().getDrawable(R.drawable.round_button_start));
+            }else {
+                mButton.setText(R.string.stop_driving);
+                mButton.setBackground(getResources().getDrawable(R.drawable.round_button));
+            }
         }
     }
 }

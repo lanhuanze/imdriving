@@ -22,7 +22,7 @@
 	<string name="test_notification_title">Welcome to I am driving</string>
 	<string name="test_notification_content">Wish you a good journey</string>
 
-    <string name="welcome_message">Welcome to Google driving, have a good journey.</string>
+    <string name="welcome_message">Welcome to safe driving, have a good journey.</string>
     <string name="bye_bye_message">Have a good time, bye.</string>
 
 
@@ -52,4 +52,10 @@
     <string name="setting_auto_read_switch_off">Off</string>
     <string name="setting_speech_dictate_language">Choose language</string>
     <string name="setting_select_all">Select all</string>
+
+    <string name="translate_introduction" translate="false">We need your help to translate our app to
+        your language to secure more people driving safely. We will refund the first
+        50 people who buy this app from your country after your translation. We plan to support following languages:
+        Dutch, French, German, Italian, Korean, Polish, Portuguese, Russian, Spanish.</string>
+    <string name="translate_contact_us">Contact Us (Email)</string>
 </resources>

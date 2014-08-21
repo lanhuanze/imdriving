@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.text.TextUtils;
 import com.irefire.android.imdriving.App;
+import com.irefire.android.imdriving.R;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -74,6 +75,22 @@ public class AppSettings {
         this.firstUseTime = mPrefs.getLong(KEY_FIRST_USED_TIME, System.currentTimeMillis());
         this.lastUseTime = mPrefs.getLong(KEY_LAST_USED_TIME, System.currentTimeMillis());
         this.accountInfoId = mPrefs.getString(KEY_ACCOUNT_INFO_ID, "");
+        this.mFirstLaunch = mPrefs.getBoolean(KEY_FIRST_LAUNCH, true);
+        if (mFirstLaunch) {
+            // first run, set all the app read the notification.
+            Set<Systems.AppItem> apps = Systems.getAllApps(mContext);
+            List<String> ignorePackages = Arrays.asList(mContext.getResources().getStringArray(R.array.ingore_notification_packages));
+            Map<String, Boolean> allowedPackages = new HashMap<String, Boolean>();
+            for (Systems.AppItem ai : apps) {
+                if (!ignorePackages.contains(ai.pkg)) {
+                    allowedPackages.put(ai.pkg.toString(), Boolean.TRUE);
+                }
+            }
+            this.saveReadApps(allowedPackages);
+            SharedPreferences.Editor e = mPrefs.edit();
+            e.putBoolean(KEY_FIRST_LAUNCH, false);
+            e.commit();
+        }
         l.debug("Language:" + ttsLanguage);
         l.debug("AutoRead:" + autoRead);
         l.debug("firstUseTime:" + new Date(firstUseTime));

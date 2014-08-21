@@ -9,10 +9,15 @@
     android:gravity="center"
     android:orientation="vertical"
     android:id="@+id/fragment_main"
+    android:background="#26404E"
     tools:context="com.irefire.android.imdriving.MainActivity$PlaceholderFragment" >
     <Button
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="@dimen/start_button_size"
+            android:layout_height="@dimen/start_button_size"
+            android:background="@drawable/round_button_start"
+            android:gravity="center_vertical|center_horizontal"
+            android:textSize="@dimen/start_button_text_size"
+            android:textColor="#fff"
             android:text="@string/start_driving"
             android:id="@+id/button_start_stop"/>
 

@@ -42,6 +42,7 @@
 
                 android:label="@string/app_settings"/>
         <activity android:name="com.irefire.android.imdriving.FilterAppActivity" android:label="@string/choose_app_to_read"/>
+        <activity android:name=".TranslateActivity"/>
 
         <service
             android:name="com.irefire.android.imdriving.service.NotificationListener"

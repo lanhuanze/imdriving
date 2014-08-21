@@ -60,4 +60,9 @@
     </string-array>
 
     <string-array name="empty_arrays"/>
+
+    <string-array name="ingore_notification_packages">
+        <item>com.android.mms</item>
+        <item>com.htc.sense.mms</item>
+    </string-array>
 </resources>
