@@ -11,7 +11,7 @@
 
     <string name="action_help_translate">Help to translate</string>
     <string name="action_subscribe">Subscribe</string>
-    <string name="share_content">Dear, this app keep you driving more safe, please try it at http://play.google.com</string>
+    <string name="share_content">Dear, this app keep you driving more safe, please try it at https://play.google.com/store/apps/details?id=%1$s</string>
 
 
     <string name="notification_listener_name">I\'m Driving</string>
@@ -58,4 +58,9 @@
         50 people who buy this app from your country after your translation. We plan to support following languages:
         Dutch, French, German, Italian, Korean, Polish, Portuguese, Russian, Spanish.</string>
     <string name="translate_contact_us">Contact Us (Email)</string>
+
+    <string name="try_version_notify">You can use 1 hour after 7 days try, please buy unlimited version. Thanks for your support.</string>
+    <string name="download_text">Download</string>
+    <string name="support_us">Support us</string>
+    <string name="download_text_pro">Download unlimited version</string>
 </resources>

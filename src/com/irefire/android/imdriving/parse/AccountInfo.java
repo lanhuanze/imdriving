@@ -55,7 +55,7 @@ public class AccountInfo implements ParseOp {
 
     @Override
     public String getClassUrl() {
-        StringBuffer buffer = new StringBuffer();
+        StringBuilder buffer = new StringBuilder();
         buffer.append(CLASS_URL);
         buffer.append(AccountInfo.class.getSimpleName().toLowerCase());
         l.debug("ClassUrl:" + buffer.toString());
@@ -65,7 +65,7 @@ public class AccountInfo implements ParseOp {
 
     @Override
     public String getObjectUrl() {
-        StringBuffer buffer = new StringBuffer();
+        StringBuilder buffer = new StringBuilder();
         buffer.append(CLASS_URL);
         buffer.append(AccountInfo.class.getSimpleName().toLowerCase());
         buffer.append("/");
@@ -122,7 +122,7 @@ public class AccountInfo implements ParseOp {
     }
 
     public String getQueryString() {
-        StringBuffer buffer = new StringBuffer("where={\"id\":\"");
+        StringBuilder buffer = new StringBuilder("where={\"id\":\"");
         buffer.append(id);
         buffer.append("\"}");
         l.debug("getQueryString:" + buffer.toString());

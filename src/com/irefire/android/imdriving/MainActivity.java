@@ -7,6 +7,7 @@ import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.media.AudioManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.provider.Settings;
@@ -19,11 +20,14 @@ import com.irefire.android.imdriving.engine.SystemEngine;
 import com.irefire.android.imdriving.parse.UpdateParseService;
 import com.irefire.android.imdriving.service.NotificationProcessor;
 import com.irefire.android.imdriving.utils.AppSettings;
+import com.irefire.android.imdriving.utils.Constants;
 import com.irefire.android.imdriving.utils.Root;
+import com.irefire.android.imdriving.utils.TimerRecorder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Field;
+import java.util.Date;
 
 public class MainActivity extends Activity implements View.OnClickListener {
 
@@ -37,6 +41,9 @@ public class MainActivity extends Activity implements View.OnClickListener {
     private NotificationManager mNotificationManager = null;
     private Dialog mNotificationServiceDialog = null;
     private boolean isNotificationServiceDialogShowing = false;
+
+    private Dialog mBuyProVersionDialog = null;
+    private boolean isBuyProVersionDialogShow = false;
 
     private void showEnabledNotificationDialog() {
         AlertDialog.Builder builder = new Builder(MainActivity.this);
@@ -71,6 +78,43 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
         mNotificationServiceDialog = builder.create();
         mNotificationServiceDialog.show();
+    }
+
+    private void showBuyProVersionDialog() {
+        AlertDialog.Builder builder = new Builder(MainActivity.this);
+        builder.setMessage(R.string.try_version_notify);
+
+        builder.setTitle(R.string.support_us);
+        builder.setCancelable(false);
+
+        builder.setPositiveButton(android.R.string.ok,
+                new OnClickListener() {
+
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                        mBuyProVersionDialog = null;
+                        Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=com.irefire.android.imdriving"));
+                        //i.addFlag(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        startActivity(i);
+                    }
+                });
+
+        builder.setNegativeButton(android.R.string.cancel,
+                new OnClickListener() {
+
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                        mBuyProVersionDialog = null;
+                        MainActivity.this.finish();
+                        System.exit(0);
+                    }
+                });
+
+        mBuyProVersionDialog = builder.create();
+        mBuyProVersionDialog.show();
     }
 
     @Override
@@ -118,7 +162,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
         // Initialize the share intent
         Intent intent = new Intent(Intent.ACTION_SEND);
         intent.setType("text/plain");
-        intent.putExtra(Intent.EXTRA_TEXT, getString(R.string.share_content));
+        intent.putExtra(Intent.EXTRA_TEXT, getString(R.string.share_content, getPackageName()));
         mShareActionProvider.setShareIntent(intent);
         return true;
     }
@@ -183,6 +227,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
     public void onClick(View v) {
         int id = v.getId();
         if (id == R.id.button_start_stop) {
+            TimerRecorder tr = TimerRecorder.getInstance();
             if (mAppSettings.getServiceStarted()) {
                 ((Button) v).setText(R.string.start_driving);
                 ((Button) v).setBackground(getResources().getDrawable(R.drawable.round_button_start));
@@ -193,7 +238,18 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 }.start();
                 mAppSettings.setServiceStarted(false);
                 NotificationProcessor.getInstance().stop();
+                tr.stop();
             } else {
+                l.debug("First use time:" + new Date(mAppSettings.getFirstUseTime()));
+                l.debug("Current time:" + new Date(System.currentTimeMillis()));
+                if(mAppSettings.getFirstUseTime() + Constants.ONE_WEEK < System.currentTimeMillis()) {
+                    // 要查检是不是使用超过一周了。
+                    // 然后再查检是不是过了一天的量了
+                    if(tr.readQuota()) {
+                        showBuyProVersionDialog();
+                        return ;
+                    }
+                }
                 ((Button) v).setText(R.string.stop_driving);
                 ((Button) v).setBackground(getResources().getDrawable(R.drawable.round_button));
                 new Thread() {
@@ -203,7 +259,13 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 }.start();
                 mAppSettings.setServiceStarted(true);
                 NotificationProcessor.getInstance().start();
+                tr.start();
             }
+        }else if(id == R.id.button_download_pro) {
+            Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=com.irefire.android.imdriving"));
+            //i.addFlag(Intent.FLAG_ACTIVITY_NEW_TASK);
+            i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(i);
         }
     }
 
@@ -214,6 +276,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
         private View.OnClickListener mListener = null;
         private Button mButton = null;
+        private Button mDownloadButton = null;
 
         public PlaceholderFragment(View.OnClickListener listener) {
             mListener = listener;
@@ -225,7 +288,9 @@ public class MainActivity extends Activity implements View.OnClickListener {
             View rootView = inflater.inflate(R.layout.fragment_main, container,
                     false);
             mButton = (Button)rootView.findViewById(R.id.button_start_stop);
+            mDownloadButton = (Button)rootView.findViewById(R.id.button_download_pro);
             mButton.setOnClickListener(mListener);
+            mDownloadButton.setOnClickListener(mListener);
             return rootView;
         }
 

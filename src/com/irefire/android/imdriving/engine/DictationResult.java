@@ -9,7 +9,7 @@ public class DictationResult {
 
     @Override
     public String toString() {
-        StringBuffer buffer = new StringBuffer(512);
+        StringBuilder buffer = new StringBuilder(512);
         buffer.append("result:");
         buffer.append(result.name());
         if (texts.isEmpty()) {

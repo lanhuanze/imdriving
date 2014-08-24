@@ -8,7 +8,7 @@ import android.text.TextUtils;
  */
 public class ShortMessage {
     private String from;
-    private StringBuffer body = new StringBuffer();
+    private StringBuilder body = new StringBuilder();
 
     private ShortMessage(String from) {
         this.from = from;

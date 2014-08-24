@@ -20,5 +20,8 @@
             android:textColor="#fff"
             android:text="@string/start_driving"
             android:id="@+id/button_start_stop"/>
+    <Button android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:id="@+id/button_download_pro" android:text="@string/download_text_pro"
+            android:layout_gravity="center_horizontal|bottom"/>
 
 </LinearLayout>

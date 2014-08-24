@@ -68,7 +68,7 @@ public class Systems {
         while (str.startsWith("+") || str.startsWith("0")) {
             str = str.substring(1);
         }
-        StringBuffer buffer = new StringBuffer(str.length() * 2);
+        StringBuilder buffer = new StringBuilder(str.length() * 2);
         boolean ajointDigital = false;
         char cs[] = str.toCharArray();
         for (char c : cs) {
@@ -166,7 +166,7 @@ public class Systems {
     }
 
     public static String getUniqueIdentifier(Context c) {
-        StringBuffer buffer = new StringBuffer();
+        StringBuilder buffer = new StringBuilder();
         buffer.append(getImei(c));
         buffer.append(getMacAddress(c));
         buffer.append(getAndroidId(c));
@@ -246,5 +246,9 @@ public class Systems {
             items.add(item);
         }
         return items;
+    }
+
+    public static int compare(long lhs, long rhs) {
+        return lhs < rhs ? -1 : (lhs == rhs ? 0 : 1);
     }
 }

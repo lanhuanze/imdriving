@@ -102,7 +102,8 @@ public class UpdateParseService extends IntentService {
                                     mAppSettings.setFirstUseTime(System.currentTimeMillis());
                                 }
                             } catch (IOException e) {
-                                e.printStackTrace();
+                                //e.printStackTrace();
+                                l.warn("Get exception when create:" + e.getMessage());
                             }
                         } else {
                             JSONObject obj = arrays.getJSONObject(0);
